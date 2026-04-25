@@ -1,0 +1,23 @@
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Claude Code local state
+.claude/
+
+# Logs & temp
+*.log
+*.tmp
+*.swp
+
+# Node (if tooling ever lands here)
+node_modules/
+
+# Env / secrets
+.env
+.env.*

@@ -1,0 +1,11 @@
+{
+  "name": "gm-arcanum",
+  "owner": { "name": "Sam" },
+  "plugins": [
+    {
+      "name": "gm",
+      "source": "./plugin",
+      "description": "GM Arcanum. AI Game Master for tabletop RPGs — run campaigns entirely through Claude Code"
+    }
+  ]
+}

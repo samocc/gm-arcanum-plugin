@@ -1,0 +1,8 @@
+{
+  "name": "gm",
+  "version": "0.1.0",
+  "description": "AI Game Master for tabletop RPGs — run campaigns entirely through Claude Code",
+  "author": {
+    "name": "Sam"
+  }
+}
