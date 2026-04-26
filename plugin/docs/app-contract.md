@@ -150,6 +150,84 @@ Claude Code PreCompact hook passthrough. Fires when the session context is about
 
 ---
 
+### `stop_failure`
+
+Claude Code StopFailure hook passthrough. Fires when the model errors out before reaching a clean `Stop`. The session may continue with subsequent prompts; this is a per-turn failure, not session termination.
+
+**Type-specific fields:**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `error` | string | no | Passed through from Claude Code. Observed values: `"invalid_request"`. Likely values per Claude Code error model: `"rate_limit"`, `"server_error"`, `"max_output_tokens"`, `"authentication_failed"`, `"billing_error"`, `"unknown"`. Unknown values are opaque. |
+| `error_details` | string | no | Raw API error payload when the failure originates upstream (e.g. a 400 response from the Anthropic API including a `request_id`). Absent when the error is detected client-side. |
+| `last_assistant_message` | string | no | User-visible error message, ready to display verbatim. |
+
+```json
+{"v":1,"seq":17,"session_id":"79e71829-...","campaign":"campaign-arjen","t":"2026-04-25T18:42:30.000Z","type":"stop_failure","error":"invalid_request","error_details":"400 {\"type\":\"error\",\"error\":{\"type\":\"invalid_request_error\",\"message\":\"prompt is too long: 5023717 tokens > 1000000 maximum\"},\"request_id\":\"req_011CaRHkqsmfcZ2rwpWy7vyW\"}","last_assistant_message":"Prompt is too long"}
+```
+
+---
+
+### `notification`
+
+Claude Code Notification hook passthrough. Fires when the session is parked waiting on user attention — permission prompts, idle timeouts. The model is not actively producing output until the notification clears.
+
+**Headless caveat:** This hook was not observed firing in headless `claude -p` smoke tests against the conditions tried (`AskUserQuestion`, `default` permission mode, unallowed Bash). It is wired regardless — if it fires under conditions not tested or in interactive contexts, the consumer receives the event. Treat as informational signal only; do not depend on it for liveness.
+
+**Type-specific fields:**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `notification_type` | string | no | Passed through from Claude Code. Field name and values not verified by smoke test; treat as opaque. |
+| `message` | string | no | User-visible notification text if present. |
+
+```json
+{"v":1,"seq":18,"session_id":"79e71829-...","campaign":"campaign-arjen","t":"2026-04-25T18:42:35.000Z","type":"notification","notification_type":"permission_request","message":"Allow Bash command?"}
+```
+
+---
+
+### `permission_denied`
+
+Claude Code PermissionDenied hook passthrough. Fires when a tool call is blocked by the permission classifier before invocation. The model continues the turn; this is informational signal only.
+
+**Headless caveat:** This hook was not observed firing under settings.json `permissions.deny` rules in headless smoke tests — denials surface to the model as a tool result without a dedicated hook event. It is wired regardless for the case of MCP-driven or classifier auto-deny paths that may behave differently. Treat as informational signal only.
+
+**Type-specific fields:**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `tool_name` | string | no | The tool that was denied (e.g. `"Bash"`, `"Write"`). |
+| `tool_input` | object | no | The proposed tool input. May be large or carry sensitive material — see Sharp edges. |
+
+```json
+{"v":1,"seq":19,"session_id":"79e71829-...","campaign":"campaign-arjen","t":"2026-04-25T18:42:40.000Z","type":"permission_denied","tool_name":"Bash","tool_input":{"command":"rm -rf /"}}
+```
+
+---
+
+### `tool_failure`
+
+Claude Code PostToolUseFailure hook passthrough. Fires when a tool errored or was interrupted; the model continues the turn. Distinct from `permission_denied` (pre-invocation block) — `tool_failure` is post-invocation.
+
+**Status:** Code path supported by [display-failure-emit.js](../scripts/display-failure-emit.js) but the hook is registered as `_disabled_PostToolUseFailure` in [hooks.json](../hooks/hooks.json) by default. Tool failures are routine in normal gameplay (the model probes files, runs exploratory commands); enabling by default would flood the consumer with low-signal events. Rename the key in `hooks.json` to enable. Consumers should accept this event when present but not depend on it.
+
+**Type-specific fields:**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `tool_name` | string | no | The tool that failed. |
+| `tool_input` | object | no | The tool input that produced the error. Same size/sensitivity caveat as `permission_denied`. |
+| `error` | string | no | Error text passed through from Claude Code. |
+| `is_interrupt` | boolean | no | True if the tool was interrupted (vs. errored on its own). |
+| `tool_use_id` | string | no | Claude Code tool-use identifier. Pairs with the prior `PreToolUse` for the same call. |
+
+```json
+{"v":1,"seq":20,"session_id":"79e71829-...","campaign":"campaign-arjen","t":"2026-04-25T18:42:45.000Z","type":"tool_failure","tool_name":"Read","tool_input":{"file_path":"/tmp/missing.txt"},"error":"File does not exist.","is_interrupt":false,"tool_use_id":"toolu_015mwrEZfWXaVvG8y5ztKAL4"}
+```
+
+---
+
 ### `player`
 
 A player message from the Claude Code terminal (UserPromptSubmit hook). Contains the player's raw text with IDE-injected tags stripped; `>>` dice markers are preserved.
@@ -679,6 +757,8 @@ See [app-integration.md](../../docs/domains/app-integration.md) for the referenc
 - **`isCurrentTurn` is absent, never `false`.** Only the active character carries `isCurrentTurn: true`; the field is deleted from all others rather than set to `false`.
 - **Unknown `v`.** A consumer receiving an event with an unknown `v` should warn and skip rather than attempting to parse it.
 - **`POST /sync` is synchronous (10s timeout).** It blocks until the HTTP call completes. `POST /events` is async (2s timeout, detached process).
+- **`tool_input` may carry secrets.** `permission_denied` and `tool_failure` events surface the raw `tool_input` object, which may include API keys, file contents, or other sensitive material. Consumers should not display `tool_input` raw in user-facing UI; treat as opaque and pretty-print only the tool name with a short summary.
+- **`notification` and `permission_denied` may not fire in headless mode.** Both hooks are wired but were not observed firing in headless `claude -p` smoke tests (see [research_failure-hook-payloads.md](../../docs/research/research_failure-hook-payloads.md)). Consumers must not depend on either as a liveness signal.
 
 ---
 

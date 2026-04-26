@@ -10,6 +10,8 @@ Determine scope, compose a briefing for a `gm-creative` agent, spawn it in the b
 
 **Scope:** Use $ARGUMENTS if provided. Otherwise determine the next logical content block from the party's current situation. If unclear, ask the player.
 
+**Verbosity:** Default to **gm-eyes-only** — the prep summary is GM-internal, used to adapt content on the fly. Relayed in full to the player only when $ARGUMENTS signals it explicitly ("verbose", "full summary", "show me what's in it", or equivalent player intent to see prep contents up front). When ambiguous, default to gm-eyes-only.
+
 **Dispatch:** Compose the agent briefing by adapting the reference below — replace `[placeholders]` with what you already know from the current session. Do not load additional files for this — provide what you have, the agent fills gaps from campaign docs. Spawn as a **background** `gm-creative` agent.
 
 **Agent briefing reference:**
@@ -47,4 +49,9 @@ After writing, add a new row to `[campaign path]/CLAUDE.md`'s GM Prep manifest t
 
 ## After Delegation
 
-Continue gameplay. When the agent reports back, briefly acknowledge to the player that the prep is ready and where it was written. Read it yourself before the party reaches that content.
+Continue gameplay. Read the prep yourself before the party reaches that content.
+
+When the agent reports back, relay per Verbosity:
+
+- **gm-eyes-only (default):** Tell the player only that the prep is ready and where it was written. Do not relay the content summary (discoveries, encounters, items, creative decisions) — it spoils prep-discoverable beats. Keep the report in your own context to adapt during play. Escalate a specific item to the player only if it genuinely needs alignment (e.g., a creative decision that contradicts their stated direction).
+- **Verbose:** Relay the agent's full summary to the player as reported.

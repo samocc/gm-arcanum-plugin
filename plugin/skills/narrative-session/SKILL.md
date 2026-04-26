@@ -74,7 +74,7 @@ When a new conversation begins in narrative mode:
    The Stop hook parses them and emits the corresponding display events.
 
 2. **Load partial documents.**
-   Grep for `-- narrative-break --` with `output_mode: "content"` and `-n: true`. For each hit, Read with `limit` set to the marker line number.
+   Grep for `<!-- narrative-break -->` with `output_mode: "content"` and `-n: true`. For each hit, Read with `limit` set to the marker line number.
 
 2. **Pre-flight: Verify essential documents are loaded.**
    - [ ] `campaign-settings.md` — system, level, current state
