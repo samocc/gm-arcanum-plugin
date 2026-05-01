@@ -26,20 +26,48 @@
 const MARKER_RE = /^>>\s*\*\*([^*]+?)\*\*\s*$/;
 
 /**
- * Registry of known event types. Maps event name → optional value schema.
+ * Registry of known event types. Maps event name → schema.
  *
- * - `values: null` means the event takes no argument. `>> **Foo**` matches.
- * - `values: Set<string>` means the event requires a value from the set.
+ * Three schema shapes are supported:
+ *
+ * - `values: null` — no argument. `>> **Foo**` matches.
+ * - `values: Set<string>` — single value from a fixed set.
  *   `>> **Foo: bar**` only matches if `bar` ∈ values.
- * - `values: "any"` would allow any string as value (not used today).
+ * - `payload: { keyName: { required, values? }, ... }` — multi-field key=value
+ *   payload. `>> **Foo: k1=v1, k2=v2**` matches if every required key is
+ *   present and every key with a `values` set has a value in that set.
+ *   Extra keys not in the schema reject the marker.
+ *
+ * Intent namespace (`intent/*` wire types):
+ *   The producer/consumer contract for `intent/*` events lives in
+ *   `plugin/docs/app-contract.md` ("Intents" section). Adding a new intent
+ *   here implies updating the dispatcher in `party-status-update.js` to map
+ *   the human-readable name to its `intent/<name>` wire event.
  */
 const KNOWN_EVENTS = {
+  // Status / sync — consumer reacts; no user decision gates the event.
   "Session Mode": { values: new Set(["narrative", "combat", "meta", "test"]) },
   "Party Sync": { values: null },
   "Display Sync": { values: null },
   "Session Start": { values: null },
   "Monitor Ready": { values: null },
+
+  // Intents — GM-proposed actions awaiting consumer confirmation.
+  // Producer rule: emit, stop, do not invoke the implied skill.
   "Roll Initiative": { values: null },
+  "Session End": { values: null },
+  "IP Validation": {
+    payload: {
+      kind: { required: true, values: new Set(["Race", "Class", "Subclass"]) },
+      value: { required: true },
+    },
+  },
+  "Start Session": {
+    payload: {
+      mode: { required: true, values: new Set(["combat", "meta"]) },
+    },
+  },
+  "Resume Session": { values: null },
 };
 
 /**
@@ -49,6 +77,9 @@ const KNOWN_EVENTS = {
  * Examples:
  *   "Session Mode: narrative" → { type: "Session Mode", value: "narrative" }
  *   "Party Sync"              → { type: "Party Sync", value: null }
+ *
+ * For payload-carrying intents the `value` side is a key=value list — that
+ * second-level parsing happens in `validate()`, not here.
  */
 function splitTypeValue(boldContent) {
   const trimmed = boldContent.trim();
@@ -62,35 +93,82 @@ function splitTypeValue(boldContent) {
 }
 
 /**
+ * Parse a key=value list (`"k1=v1, k2=v2"`) into a flat object.
+ * Returns null if the input is malformed (missing `=`, empty key/value,
+ * duplicate key). Tolerant of whitespace around `=` and `,`.
+ */
+function parseKeyValuePairs(s) {
+  if (!s) return null;
+  const out = {};
+  for (const rawPair of s.split(",")) {
+    const pair = rawPair.trim();
+    if (!pair) return null;
+    const eqIdx = pair.indexOf("=");
+    if (eqIdx === -1) return null;
+    const k = pair.slice(0, eqIdx).trim();
+    const v = pair.slice(eqIdx + 1).trim();
+    if (!k || !v) return null;
+    if (Object.prototype.hasOwnProperty.call(out, k)) return null;
+    out[k] = v;
+  }
+  return out;
+}
+
+/**
  * Validate a parsed `{type, value}` against the registry. Returns a
- * normalized event object or null if invalid (unknown type, or value
- * doesn't match expected schema).
+ * normalized event object (`{type}`, `{type, value}`, or `{type, payload}`)
+ * or null if invalid.
  */
 function validate(parsed) {
   const spec = KNOWN_EVENTS[parsed.type];
   if (!spec) return null;
 
+  // No-arg event. Value present is a soft mismatch — ignore value.
   if (spec.values === null) {
-    // No-arg event. Value present is a soft mismatch — ignore value.
     return { type: parsed.type };
   }
 
+  // Single-value event.
   if (spec.values instanceof Set) {
     if (!parsed.value || !spec.values.has(parsed.value)) return null;
     return { type: parsed.type, value: parsed.value };
   }
 
-  // Future: spec.values === "any"
-  return { type: parsed.type, value: parsed.value };
+  // Multi-key payload event.
+  if (spec.payload) {
+    if (!parsed.value) return null;
+    const payload = parseKeyValuePairs(parsed.value);
+    if (!payload) return null;
+
+    // Every payload key must be in the schema.
+    for (const k of Object.keys(payload)) {
+      if (!Object.prototype.hasOwnProperty.call(spec.payload, k)) return null;
+    }
+    // Every required key must be present; every key with a values set must
+    // carry an allowed value.
+    for (const [k, schema] of Object.entries(spec.payload)) {
+      const v = payload[k];
+      if (schema.required && (v === undefined || v === "")) return null;
+      if (v !== undefined && schema.values instanceof Set && !schema.values.has(v)) return null;
+    }
+    return { type: parsed.type, payload };
+  }
+
+  return null;
 }
 
 /**
- * Scan GM text for event markers. Returns an array of `{type, value?}`
- * objects in order of appearance. Duplicates are preserved (caller
- * decides what to do with multiple of the same event in one message).
+ * Scan GM text for event markers. Returns an array of normalized event
+ * objects in order of appearance. Each entry is one of:
+ *   - `{type}`                   — no-arg event
+ *   - `{type, value}`            — single-value event
+ *   - `{type, payload: {...}}`   — multi-key payload event (intents w/ payload)
+ *
+ * Duplicates are preserved (caller decides what to do with multiple of the
+ * same event in one message).
  *
  * @param {string} text - the GM's message text
- * @returns {Array<{type: string, value?: string}>}
+ * @returns {Array<{type: string, value?: string, payload?: Object}>}
  */
 function parseEventMarkers(text) {
   if (typeof text !== "string" || !text) return [];

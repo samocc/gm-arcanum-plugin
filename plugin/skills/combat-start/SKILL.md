@@ -57,6 +57,8 @@ Do not try to work around a missing prep file by guessing or improvising in the 
 
 ## After Completion
 
-Signal the player:
+Simply emit the event marker to trigger a combat session for the user, nothing else, no trailing content.
 
-> Combat handoff is ready. Start a new Claude Code session and state your initiative roll: **Initiative roll: XX**. The Combat GM will pick up from there. If unsure, start the session saying **Combat session** and the GM will guide you.
+```
+>> **Start Session: mode=combat**
+```

@@ -4,11 +4,11 @@ Section-by-section writing standards for character-sheet documents. This is prim
 
 ## Narrative-Break Marker
 
-Character sheets include a `<!-- narrative-break -->` HTML-comment marker. This marks what portion of the sheet is relevant for narration, the rest is only combat relevant, when creating a new character-sheet adhere to the default positions.
+Character sheets can include a `<!-- narrative-break -->` HTML-comment marker. This marks what portion of the sheet is relevant for narration, the rest is only combat relevant, when creating a new character-sheet adhere to the default positions.
 
 **Default marker positions:**
 * **PC sheets:** marker at end of file (full narrative load).
-* **Companion sheets:** marker placed immediately **before `## Feats`**, so only `## General` and `## Abilities` and `## Notes` load by default.
+* **Companion sheets:** no marker by default.
 
 **Customization:** The marker is player-tunable. MetaGM can move it, or reorder sections around it, to change what the narrator sees for a given character. If a particular companion has important standing state (e.g. a familiar that matters in scenes), move the marker down past `## Notes` on that sheet, or move individual sections above the marker. An absent marker means the full file loads.
 
@@ -107,7 +107,7 @@ Before finishing, verify internal consistency:
 * **System:** [TTRPG system and edition, e.g., "D&D 5e (2024)"]
 * **Proficiency Bonus:** [+N, derived from total character level]
 * **Map Token:** [Emoji circle for battle maps — chosen by player from party palette: 🟢 🔵 🟣 🟡]
-* **Coin:** [For PCs: the party's shared funds, e.g., "15 gp" or "10 gp 5 sp 3 cp". For Companions: always "0 (managed by PC)" — companions do not carry party funds.]
+* **Coin:** [For PCs: this PC's coin (each PC tracks their own funds), e.g., "15 gp" or "10 gp 5 sp 3 cp". For Companions: always "0 (managed by a PC)" — companions do not carry party funds.]
 
 ## Abilities
 
@@ -206,9 +206,8 @@ Before finishing, verify internal consistency:
 
 [Optional — short prose (1-2 paragraphs) describing how abilities manifest in combat. Sensory texture only. Omit if standard for the class.]
 
-<!-- narrative-break -->
 ```
 
 **Marker placement in generated sheets:**
 * **PC sheet:** place `<!-- narrative-break -->` at the end of the file (after `## Flavor`), as shown in the template above.
-* **Companion sheet:** place `<!-- narrative-break -->` **immediately before `## Feats`** instead — so General, Abilities, and Notes load narratively by default.
+* **Companion sheet:** no marker by default.

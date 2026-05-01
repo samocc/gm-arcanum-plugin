@@ -22,7 +22,7 @@ Generate a mechanically sound, rules-legal character-sheet for a companion from 
 - [ ] `campaign-settings.md` — system, level, party composition
 - [ ] `campaign-pitch.md` — system edition, tone
 - [ ] The PC `character-sheet.md` doc — power level reference
-- [ ] **Reference files** — read `content-sources.md` at `[workspace-root]/content-sources.md` (using the workspace root provided at the top of this skill's content) and find this companion's class and subclass. If the Reference column links to a file, read it as the mechanical source of truth. If it says `Model Knowledge`, proceed using built-in knowledge. If the class/subclass is not listed, proceed using built-in knowledge but note reduced reliability.
+- [ ] **Reference files** — read `content-sources.md` at `[workspace-root]/content-sources.md` (using the workspace root provided at the top of this skill's content) and find this companion's class and subclass. If the reference links to a file, read it as the mechanical source of truth. If it says `Model Knowledge`, proceed using built-in knowledge. If the class/subclass is not listed, proceed using built-in knowledge but note reduced reliability.
 
 ---
 
@@ -37,7 +37,7 @@ Read the companion-guide to extract Name, Race, and Class. Read campaign-setting
 * Set Role to "Companion party member (NPC)".
 * Set Proficiency Bonus based on total character level.
 * Set Map Token to the emoji circle color provided in the briefing. If no Map Token was specified in the briefing, assign from available party colors (🟢 🔵 🟣 🟡) — check existing party member character-sheets to avoid duplicates.
-* Set Coin to `0 (managed by PC)` — companions never carry party funds. Party funds live on the PC character sheet.
+* Set Coin to `0 (managed by a PC)` — companions never carry party funds. Each PC tracks their own coin on their character sheet.
 
 ### Step 2: Generate Ability Scores
 
@@ -102,11 +102,7 @@ Select proficiencies from class and background options. Add expertise or special
 * **Notes:** Standing narrative state relevant at this level — known teleportation circles, familiar details, default behaviors ("casts Mage Armor every morning"), persistent ties. "(None)" if none apply. Most companions will have "(None)" or a single line.
 * **Flavor (optional):** Only if the companion's abilities manifest in a thematically distinct way based on the guide. Short prose (1-2 paragraphs) — sensory combat-visual texture only. No personality, motivations, or non-combat behavior. Omit if abilities present in a standard way for the class.
 
-### Step 10: Place Narrative-Break Marker
-
-Insert `<!-- narrative-break -->` **immediately before `## Feats`**. This is the companion default: `## General`, `## Abilities`, and `## Notes` load in narrative sessions; everything below (Feats, Features, Combat, Equipment, Flavor) loads on-demand or in combat sessions.
-
-### Step 11: Final Review
+### Step 10: Final Review
 
 Before writing the file, verify internal consistency:
 * Ability score modifiers correctly derive from scores.
@@ -116,12 +112,11 @@ Before writing the file, verify internal consistency:
 * Number of prepared/known spells matches the class features table exactly.
 * Spell slot counts match class level progression.
 * No spell exceeds the maximum spell level for the character's class level.
-* Attunement count does not exceed 3.
 * Reactions line includes all available reactions.
 
 ---
 
-### Step 12: Generate status.json
+### Step 11: Generate status.json
 
 Also produce `status.json` alongside the character sheet — you already have all the data in context from the prior steps: identity, abilities, race/level/PB, Speed, HP/AC/HD, spell slots and prepared list, class resources, feats, weapons, skills, SpellDC/SpellAttack, map token.
 

@@ -86,17 +86,6 @@
         ]
       }
     ],
-    "Notification": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/display-failure-emit.js\"",
-            "timeout": 5
-          }
-        ]
-      }
-    ],
     "PermissionDenied": [
       {
         "hooks": [

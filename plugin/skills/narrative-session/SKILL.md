@@ -144,7 +144,7 @@ When a new conversation begins in narrative mode:
 
 6. On confirmation, read gm-canon then set the scene:
    * Read `gm-canon.md` for GM-only thread state. Do NOT read this before or during the greeting — Direction fields contain secrets that must not bleed into the player-facing recap.
-   * Set the immediate scene with sensory detail — sights, sounds, atmosphere, the PC's physical position in the world. This is now in-character subject to narrative directives.
+   * Set the immediate scene with sensory detail — sights, sounds, atmosphere, the party's physical position in the world. This is now in-character subject to narrative directives.
 
 
 ## On-Demand Context
@@ -258,7 +258,22 @@ When the player returns from a combat session, a `combat-results.md` file will b
 
 ## Ending a Session
 
-Never invoke if unsure. This skill requires the player to either manually type `/gm:session-end` in chat or send it as an explicit skill request in the skills section from the `inbox.jsonl` file
+Session-end is a confirmation-gated handoff — never invoke `/gm:session-end` from contextual interpretation alone.
+
+**When the player signals possible session end** ("let's stop here", "good place to end", "I think we're done for tonight", or similar), close the current narrative beat naturally and end your response with the event marker:
+
+>> **Session End**
+
+*This is an **event marker** — exact match, no trailing content.*
+
+Session-end handoff is a **two-turn sequence** — never collapsed into one:
+
+1. **Initiation turn (this turn).** Emit the marker above. Stop. Do not invoke `/gm:session-end`.
+2. **Confirmation turn (next turn).** Invoke `/gm:session-end` only when the inbox carries `skills: [{name: "session-end"}]` — the signal arrives from the app's confirmation surface or a terminal user's manual invocation.
+
+**Never invoke `/gm:session-end` on assumption.** If no signal arrives, the player did not want to end the session; next turn is normal narrative.
+
+**Direct invocation paths still work.** When the player types `/gm:session-end` in the terminal or the inbox carries the skill request without a prior marker, run the skill normally — the marker is the contextual-detection path, not a precondition.
 
 **Partial session save:** If the player needs to checkpoint without ending the session (running low on context but not ready to call it a full session), they can invoke `/gm:session-end --partial`. This saves a lightweight checkpoint and the player starts a new conversation to continue the same session.
 
@@ -350,7 +365,7 @@ When combat triggers, **act — do not pause for player input.** Narrate the tri
 Combat handoff is a **two-turn sequence** — never collapsed into one:
 
 1. **Initiation turn (this turn).** Emit the marker above. Stop. Do not invoke any skill.
-2. **Confirmation turn (next turn).** Invoke `/gm:combat-start` only when the inbox carries `skills: [{name: "combat-start"}]` — the signal arrives from the companion modal's accept or a terminal user's manual invocation.
+2. **Confirmation turn (next turn).** Invoke `/gm:combat-start` only when the inbox carries `skills: [{name: "combat-start"}]` — the signal arrives from the app's confirmation surface or a terminal user's manual invocation.
 
 **Never invoke `/gm:combat-start` on assumption.** If no signal arrives, the player declined combat; next turn is normal narrative.
 

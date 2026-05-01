@@ -24,14 +24,28 @@ Level up the party. Updates `character-sheet.md` doc for every party member and 
 
 ## Mode Selection
 
-Check `$ARGUMENTS`:
-- `--auto` → **Autonomous mode** (see Autonomous Mode below)
+Check `$ARGUMENTS` for flags:
+
+- `--auto` → **Autonomous mode** — companion level-ups run in background; PCs are walked collaboratively.
+- `--pc=name` → **Single-PC mode** — target one named PC. Other PCs and companions are skipped. Combine with `--auto` to handle companions in background while focusing on the named PC.
+- `--companions-only` → **Companions-only mode** — run only the companion batch; no PC work, **no campaign-settings bookkeeping** (a companions-only run does not mark the level-up done).
 - No arguments → ask the player which mode they'd like:
 
 > **Collaborative** — we go through each character together, discuss the changes, and you make all the decisions.
-> **Autonomous** — I level up the companions in the background while we work on your PC together.
+> **Autonomous** — I level up the companions in the background while we work on your PC(s) together.
 
 If the player has already indicated a preference, default to that.
+
+**Flag combinations.**
+- `--auto` + `--pc=name` is valid: `--pc=name` selects which PC gets the foreground collaborative slot; `--auto` continues to fire companion sub-agents in background. Other PCs are skipped (run them in parallel sessions or in a separate invocation).
+- `--pc=name` + `--companions-only` is contradictory — reject and ask the player which they meant.
+- `--auto` + `--companions-only` is contradictory (no PC means nothing to background-around) — reject.
+
+### Parallel Sessions
+
+Multi-PC tables can level up in parallel: each player opens their own MetaGM session against the shared campaign workspace and runs `/gm:level-up --pc=their-pc-name`. Companion level-ups happen once via `--companions-only` (or roll into one of the PC runs by adding `--auto` to that invocation). Bookkeeping (`Level`, `Last Level-Up` in `campaign-settings.md`) is last-write-wins — values are deterministic from `Level Gain`, so parallel writes converge on the same final state.
+
+`argument-hint` only advertises `--auto` to keep the surface compact; the additional flags are documented here in the body.
 
 ---
 
@@ -47,11 +61,19 @@ For multi-level jumps (e.g., level 5 → 7), all changes across all levels gaine
 
 **Collaborative (default):**
 
-Process characters one at a time — **PC first**, then companions. For each character, run Steps 3 through 6 below.
+Process characters one at a time — **PC(s) first** (each in turn for multi-PC parties), then companions. For each character, run Steps 3 through 6 below.
 
 **Autonomous (`--auto`):**
 
-Companion level-ups run in the background while you work on the PC collaboratively. See the **Autonomous Mode** section below for the orchestration procedure. Then run Steps 3 through 6 for the PC.
+Companion level-ups run in the background while you work on the PC(s) collaboratively. See the **Autonomous Mode** section below for the orchestration procedure. Then run Steps 3 through 6 for each PC in turn (or just the named PC if `--pc=name` is also set).
+
+**Single-PC (`--pc=name`):**
+
+Skip the party loop. Run Steps 3 through 6 for the named PC only. Other PCs and companions are not processed. (Combine with `--auto` to also fire companion background work; without `--auto`, companions are skipped entirely.)
+
+**Companions-only (`--companions-only`):**
+
+Run the autonomous orchestration (see Autonomous Mode) without the foreground PC work. Skip Steps 3 through 6 entirely. **Skip the campaign-settings bookkeeping step** in Wrap-Up — companions-only does not mark the level-up done.
 
 ### Step 3 — Load Character Documents
 
@@ -94,6 +116,21 @@ Present everything that changes, and clearly identify any **decisions** required
 
 Wait for the player to discuss and finalize all decisions before proceeding.
 
+**IP Validation gate.** If finalized decisions **added** a new Class (multi-classing) or selected a Subclass for the first time, check the addition against the matching section in `content-sources.md` at the workspace root. For any addition not listed, emit one IP Validation intent marker per addition (one per line):
+
+```
+>> **IP Validation: kind=Class, value=<Class>**
+>> **IP Validation: kind=Subclass, value=<Subclass>**
+```
+
+Then **stop** — do not proceed to Step 6. Do NOT re-flag an existing Class or Subclass that the PC already had — that selection was validated at character creation. Race never changes at level-up.
+
+**Resume handling:**
+- *Player confirmed rights*. Add a new entry to the matching section in `content-sources.md`: `kind=Class` → Classes (`- Class — Model Knowledge`), `kind=Subclass` → Subclasses (`- Class / Subclass — Model Knowledge`, using the PC's class). Then proceed to Step 6.
+- *Player asked for alternative*. Do NOT modify `content-sources.md`. Instead propose from the existing available options in `content-sources.md` (Classes section for a multi-class addition, Subclasses section for a first-time subclass selection) and walk the player through a new selection. If the player steers it towards yet another selection not present in `content-sources.md` you must re-send the IP Validation gate and repeat the protocol until either the player's IP Validation gate reply confirms or the choices are all present in `content-sources.md`.
+
+If no addition was made (or every addition is listed) on first check, proceed to Step 6 normally.
+
 ### Step 6 — Apply Updates
 
 Once all decisions are finalized:
@@ -124,7 +161,7 @@ After Step 1 (level change confirmed):
 
 1. For each companion in campaign-settings `Members`, compose an agent briefing by adapting the reference below.
 2. Spawn a **background** `gm-evolution` agent for each companion.
-3. Immediately proceed with the PC's collaborative level-up (Steps 3-6).
+3. Immediately proceed with the PC collaborative level-up (Steps 3-6) — for multi-PC parties, walk each PC in turn (or just the `--pc=name` target if specified). Under `--companions-only`, skip this step entirely.
 
 **Agent briefing reference:**
 
@@ -159,6 +196,14 @@ When companion agents report back, relay each report to the player:
 - Any decisions the agent flagged as judgment calls
 
 The player can request adjustments to any autonomous choice — make the edits directly if needed.
+
+**IP Validation aggregation.** Inspect each companion report's `IP Validation findings` line. For every flagged finding across all companion reports, emit one IP Validation intent marker in the same response (alongside the relayed reports). Stop after presenting the relayed reports + markers — do not advance to Wrap-Up until the player resolves any IP cards.
+
+**Resume handling:**
+- *Player confirmed rights*. Add a new entry to the matching section in `content-sources.md`: `kind=Class` → Classes (`- Class — Model Knowledge`), `kind=Subclass` → Subclasses (`- Class / Subclass — Model Knowledge`, using the affected companion's class — match each marker to the report it came from). Then proceed to Wrap-Up.
+- *Player asked for alternative for a flagged companion*. Do NOT modify `content-sources.md`. Instead propose from the existing available options in `content-sources.md` and ask the player to pick a new selection for that companion's affected slot, then redo that companion's level-up with the new pick. If the alternative is also not in `content-sources.md` you must re-send the IP Validation gate and repeat the protocol until either the player's IP Validation gate reply confirms or the choices are all present in `content-sources.md`.
+
+If no companion report flagged anything on first check, proceed to Wrap-Up normally.
 
 ---
 
@@ -204,10 +249,10 @@ Lean toward thematic, on-brand picks that fit the character's identity and estab
 ## Wrap-Up
 
 After all characters are done (including companion agent reports in autonomous mode):
-1. Update campaign-settings.md:
+1. **Update `campaign-settings.md`** — *skip this step entirely under `--companions-only`.* Default, `--auto`, and `--pc=name` runs all perform this update; under parallel sessions it's last-write-wins (values converge from `Level Gain`).
    - Set the `Level` field to the new level.
    - Set the `Last Level-Up` field (under Session Tracking) to the current `Sessions Played` value. If the field does not exist, add it after `Campaign Stage`.
-2. **Update PC `status.json`.** (Companion `status.json` files are updated by `level-up-internal` as part of each companion's sub-agent flow — no work needed here for companions.)
+2. **Update each leveled PC's `status.json`.** Run this once per PC processed in this invocation. (Companion `status.json` files are updated by `level-up-internal` as part of each companion's sub-agent flow — no work needed here for companions.) Skip entirely under `--companions-only`.
 
    - Load `doc-templates/status-json-template.md` for schema reference.
    - Read the PC's existing `status.json` and apply:

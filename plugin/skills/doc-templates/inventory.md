@@ -4,7 +4,7 @@ Structural template for `inventory.md` documents. The inventory tracks party-lev
 
 **Relationship to character sheets:** Items personally equipped on a character (armor, weapons, tools in active use) live on that character's sheet in the Equipment section. The inventory's Items section is for party shared supplies — things stored but not personally equipped. Key Items can appear in both places (inventory serves as the central reference). Item Descriptions live here for ALL notable items regardless of where they are equipped.
 
-**Party funds are NOT tracked here.** Coin is tracked on the PC's character sheet in the General section (`* **Coin:** N gp`).
+**Party funds are NOT tracked here.** Coin is tracked per-PC — each PC's character sheet has its own `Coin` field in the General section (`* **Coin:** N gp`). Multi-PC parties: each PC tracks their own funds independently.
 
 **Optional: Partial loading via `narrative-break`.** Inventory is on-demand by default in narrative sessions. If a small set of items keeps coming up in scenes (a Bag of Holding whose contents matter, a key plot item, a persistent reference the narrator should always know about), the inventory can opt into partial loading via the universal `<!-- narrative-break -->` marker. Pin the critical items at the top of the file — typically inside `## Key Items` with their description blocks — and place the marker after them. Those items load automatically at session start; everything below the marker stays on-demand.
 

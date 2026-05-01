@@ -23,7 +23,7 @@ Verify all of these are loaded before proceeding. If any are missing, read them 
 - [ ] `character-sheet.md` — read in full, this is the core document to work with
 - [ ] `companion-guide.md` — read Combat Initiation and Problem Solving sections for personality-consistent decisions
 - [ ] `campaign-settings.md` — for `Sessions Played` (archive naming)
-- [ ] **Reference files** — read `content-sources.md` at `[workspace-root]/content-sources.md` (using the workspace root provided at the top of this skill's content) and find this companion's class and subclass. If the Reference column links to a file, read it as the mechanical source of truth. If it says `Model Knowledge`, proceed using built-in knowledge. If the class/subclass is not listed, proceed using built-in knowledge but note reduced reliability.
+- [ ] **Reference files** — read `content-sources.md` at `[workspace-root]/content-sources.md` (using the workspace root provided at the top of this skill's content) and find this companion's class and subclass. If the reference links to a file, read it as the mechanical source of truth. If it says `Model Knowledge`, proceed using built-in knowledge. If the class/subclass is not listed, proceed using built-in knowledge but note reduced reliability.
 
 ---
 
@@ -111,6 +111,14 @@ Report what was done:
 > Archive: `[archive file path]`
 
 Flag any decisions where you made a judgment call (e.g., choosing between two equally viable feats) so the player knows what to review.
+
+**IP Validation findings.** If this level-up **added** a new Class (multiclass) or selected a Subclass for the first time, check that addition against the matching section in `content-sources.md` at the workspace root. Report one of:
+* `IP Validation findings: none` — the addition is listed (or marked `Model Knowledge`), or this level-up made no Class/Subclass addition.
+* One bullet per unlisted addition, in marker-payload form so the parent can drop it straight into an intent marker:
+  * `kind=Class, value=<Class>` (multiclass into a non-listed class)
+  * `kind=Subclass, value=<Subclass>` (subclass selection of a non-listed subclass)
+
+Do NOT re-flag an existing or pre-selected Class/Subclass that the companion already had at the start of this level-up — that selection was validated at character creation.
 
 ---
 

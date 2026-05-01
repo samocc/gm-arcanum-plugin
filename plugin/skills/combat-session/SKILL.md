@@ -397,12 +397,17 @@ End combat when all enemies are defeated, have surrendered, or have fled:
 1. Write `combat-results.md` to `.sessions/combat-results.md` (relative to the active campaign dir) replacing the previous content of the file. Read the template from `${CLAUDE_SKILL_DIR}/combat-results-template.md` and fill it:
    * **Final State**: For each combatant — current HP/max HP, active conditions, notable resources expended (spell slots, abilities, items used).
    * **Summary**: 1-3 sentences describing what happened narratively. No mechanics, no rolls, no turn-by-turn replay. Just the story of the fight.
+
 2. **Save postcombat party state (silent).** Run:
-   ```
-   node ${CLAUDE_PLUGIN_ROOT}/scripts/party-status-persist.js ${CLAUDE_SESSION_ID} --postcombat
-   ```
-3. **Tell the player** to return to their narrative session:
-   * > **Combat ended:** Combat results saved. Return to your narrative session to continue the story.
+```
+node ${CLAUDE_PLUGIN_ROOT}/scripts/party-status-persist.js ${CLAUDE_SESSION_ID} --postcombat
+```
+
+3. **Signal the return to narrative.** simply emit the event marker, nothing else, no trailing content. This automatically informs the user and redirects them back to their narrative session:
+
+```
+>> **Resume Session**
+```
 
 ---
 

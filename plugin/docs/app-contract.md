@@ -323,12 +323,96 @@ No type-specific fields beyond the universal envelope.
 
 ---
 
+### Intents (`intent/*`)
+
+The `intent/*` namespace is reserved for **GM-proposed actions awaiting consumer confirmation**. Three rules define the namespace:
+
+1. **Producer.** The plugin emits the marker, then stops. The GM does not invoke the implied skill on the same turn — invocation only happens on a subsequent turn after the consumer signals confirmation.
+2. **Consumer.** A consumer is expected to gate the implied skill behind a user-facing confirmation surface. Acting on the implied skill without confirmation is a contract violation but the plugin doesn't police it.
+3. **Confirmation channel.** Confirmation arrives as a `skills: [{name: "<implied-skill>"}]` entry in `inbox.jsonl`; refusal arrives as a regular `turns[]` entry expressing decline in natural language. The plugin Monitor handles both transparently.
+
+Other event types (status / sync — `monitor_ready`, `session_mode`, `state`, etc.) are NOT intents. They carry no consumer-confirmation expectation; the consumer reacts or doesn't, but no user decision gates them.
+
+Unknown `intent/*` types should be ignored (forward compatibility — same rule as unknown `state_kind`).
+
+---
+
 ### `intent/roll_initiative`
 
-Signals that the GM has called for initiative — combat is about to begin. Emitted when `>> **Roll Initiative**` appears in the GM's response. No fields beyond the universal envelope.
+Signals that the GM has called for initiative — combat is about to begin. Emitted when `>> **Roll Initiative**` appears in the GM's response. Implied skill: `combat-start`. No fields beyond the universal envelope.
 
 ```json
 {"v":1,"seq":6,"session_id":"79e71829-...","campaign":"campaign-arjen","t":"2026-04-11T18:44:00.000Z","type":"intent/roll_initiative"}
+```
+
+---
+
+### `intent/session_end`
+
+Signals that the GM has detected player intent to wrap up the session but is not certain enough to invoke `/gm:session-end` directly. Emitted when `>> **Session End**` appears in the GM's response. Implied skill: `session-end`. No fields beyond the universal envelope.
+
+The GM must NEVER auto-invoke `/gm:session-end` from contextual interpretation alone — the only paths to invocation are (a) the consumer sending `skills: [{name: "session-end"}]` after a confirmation surface, or (b) the user typing `/gm:session-end` directly in the terminal.
+
+```json
+{"v":1,"seq":11,"session_id":"79e71829-...","campaign":"campaign-arjen","t":"2026-04-11T22:15:00.000Z","type":"intent/session_end"}
+```
+
+---
+
+### `intent/ip_validation`
+
+Signals that a character-build flow (companion-recruit, add-pc, campaign-create, level-up) has selected a Race / Class / Subclass that is not declared in the workspace's `content-sources.md`. Emitted when `>> **IP Validation: kind=K, value=V**` appears in the GM's response. No single implied skill — the consumer presents a rights-confirmation surface and the user either confirms (the in-flight build resumes) or chooses an alternative (sent as a `turns[]` entry; the build resumes from that turn).
+
+A single GM turn may emit multiple `intent/ip_validation` events when more than one selection is unlisted (e.g. non-SRD Race AND non-SRD Subclass on the same companion). Each gets a separate event in `seq` order; consumers should be prepared to render multiple confirmation surfaces or batch them per their UX choice.
+
+**Type-specific fields:**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `kind` | string | yes | One of `"Race"`, `"Class"`, `"Subclass"`. Matches a section of `content-sources.md`. |
+| `value` | string | yes | The selection name as the GM has it (e.g. `"Tortle"`, `"Artificer"`, `"College of Lore"`). |
+
+```json
+{"v":1,"seq":21,"session_id":"79e71829-...","campaign":"campaign-arjen","t":"2026-04-11T19:08:00.000Z","type":"intent/ip_validation","kind":"Race","value":"Tortle"}
+```
+
+---
+
+### `intent/start_session`
+
+Signals that the GM proposes spawning a new Claude Code session of a given mode. Emitted when `>> **Start Session: mode=M**` appears in the GM's response. No implied skill — the consumer's response is to spawn a fresh session via the standard fresh-launch protocol (`/gm:<mode>-session`), passing `originating_session_id` to the child as the `GM_ARCANUM_ORIGINATING_SESSION_ID` env var so the child can echo back on resume.
+
+**Fire-and-forget.** No ack is written back to the originating session — the consumer either spawns the new session and routes host + mobile to it, or dismisses (local hide on this device, no inbox write). The intent stays unresolved on the originating transcript on disk; if the user views it again, the card re-renders and pressing the action re-spawns or no-ops.
+
+**Type-specific fields:**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `mode` | string | yes | One of `"combat"`, `"meta"`. Determines which session-type skill the spawned session loads. Carried in the marker payload. |
+| `originating_session_id` | string | yes | Source session id. **Hook-injected** — the plugin's Stop hook fills this from the emitting session's id automatically; the GM does not carry it in the marker. Passed to the spawned child as `GM_ARCANUM_ORIGINATING_SESSION_ID` env var so the child can later emit `intent/resume_session` with the right id. |
+
+```json
+{"v":1,"seq":31,"session_id":"79e71829-...","campaign":"campaign-arjen","t":"2026-04-11T19:30:00.000Z","type":"intent/start_session","mode":"combat","originating_session_id":"79e71829-..."}
+```
+
+---
+
+### `intent/resume_session`
+
+Signals that the GM proposes routing the user back to a prior session — typically the originating session that spawned the current one. Emitted when `>> **Resume Session**` appears in the GM's response (no payload — see hook-injection note below). No implied skill — the consumer's response is to switch host + mobile to the named session and, if its agent is offline, resume the agent first; the consumer is also expected to write a generic OOC wake-up turn (e.g. `"Combat ended."`) into the resumed session's inbox so the receiving GM continues the narrative.
+
+**Combat / meta session shutdown is out of scope.** The resume action does NOT kill the originating-of-this-emit session. v1: that session keeps running after the user accepts resume; the user can manually shut it via the sidebar dot. A follow-up "session done" signal can drive auto-shutdown later, separately from this intent.
+
+**Fire-and-forget.** Same dismiss / unresolved-on-disk behavior as `intent/start_session`. On dismiss, the composer of the emitting session unlocks so the user can continue interacting with it (read the report, ask follow-ups).
+
+**Type-specific fields:**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `target_session_id` | string | yes | The Claude Code session id to route to. **Hook-injected** — the plugin's Stop hook fills this from the `GM_ARCANUM_ORIGINATING_SESSION_ID` env var (passed at session spawn time); the GM does not carry it in the marker. If the env var is unset (the emitting session was launched standalone, not spawned from an originating session), the hook logs a warning and skips emission entirely — the wire event is never produced. The GM emits the marker unconditionally; env-var presence is purely the hook's concern. Field is named `target_session_id` (not `session_id`) to avoid collision with the universal envelope's `session_id`, which always identifies the emitting session. |
+
+```json
+{"v":1,"seq":42,"session_id":"a1b2c3d4-...","campaign":"campaign-arjen","t":"2026-04-11T20:15:00.000Z","type":"intent/resume_session","target_session_id":"79e71829-..."}
 ```
 
 ---
@@ -658,12 +742,21 @@ The `>>` sigil serves two distinct registers, regex-distinct:
 >> **Monitor Ready**
 >> **Display Sync**
 >> **Roll Initiative**
+>> **Session End**
 >> **Session Mode: narrative**
+>> **IP Validation: kind=Race, value=Tortle**
+>> **Start Session: mode=combat**
+>> **Resume Session**
 >> **Party Sync**
 >> **Session Start**
 ```
 
 A line never satisfies both registers simultaneously — mutation markers require content after `**`, event markers require `\s*$` after `**`.
+
+**Event-marker payload forms.** Inside the bold delimiters, an event marker may carry either:
+- nothing (no-arg, e.g. `>> **Roll Initiative**`),
+- a single value after a colon (e.g. `>> **Session Mode: narrative**`), or
+- a key=value list after a colon (e.g. `>> **IP Validation: kind=Race, value=Tortle**`). Pairs are comma-separated; whitespace around `=` and `,` is tolerated. Unknown keys, missing required keys, and duplicate keys reject the marker.
 
 ### Mutation marker grammar
 
@@ -699,6 +792,8 @@ Special targets:
 
 ### Event markers (registered)
 
+Status / sync markers — consumer reacts; no user decision gates them:
+
 | Marker | Emitted event type | Notes |
 |---|---|---|
 | `>> **Monitor Ready**` | `monitor_ready` | Monitor is armed. |
@@ -708,8 +803,17 @@ Special targets:
 | `>> **Session Mode: test**` | `session_mode` with `mode: "test"` | |
 | `>> **Party Sync**` | `state` / `party_vitals` | Emits the current party-status snapshot. |
 | `>> **Display Sync**` | (triggers `/sync` HTTP call) | Initiates a full-state resync. No transcript event. |
-| `>> **Roll Initiative**` | `intent/roll_initiative` | Combat initiation signal. |
 | `>> **Session Start**` | (no-op) | Reserved; no event emitted. |
+
+Intent markers — GM-proposed actions awaiting consumer confirmation. See [Intents (`intent/*`)](#intents-intent) for the namespace contract:
+
+| Marker | Emitted event type | Implied skill | Notes |
+|---|---|---|---|
+| `>> **Roll Initiative**` | `intent/roll_initiative` | `combat-start` | Combat initiation signal. |
+| `>> **Session End**` | `intent/session_end` | `session-end` | Player-intent-to-wrap signal. |
+| `>> **IP Validation: kind=K, value=V**` | `intent/ip_validation` (with `kind`, `value`) | none — consumer routes confirm vs. alternative | Non-SRD content rights check. `kind` ∈ `{Race, Class, Subclass}`. Multiple per turn allowed. |
+| `>> **Start Session: mode=M**` | `intent/start_session` (with `mode`, hook-injected `originating_session_id`) | none — consumer spawns a fresh session via fresh-launch protocol | Session spawn signal. `mode` ∈ `{combat, meta}`. The plugin Stop hook auto-fills `originating_session_id` from the emitting session id; the GM does not carry it in the marker. Spawned child receives that id as `GM_ARCANUM_ORIGINATING_SESSION_ID` env var. |
+| `>> **Resume Session**` | `intent/resume_session` (with hook-injected `target_session_id`) | none — consumer routes host + mobile to the named session | Return-to-prior-session signal. The plugin Stop hook auto-fills `target_session_id` from `GM_ARCANUM_ORIGINATING_SESSION_ID`; if the env var is unset the hook logs a warning and skips emission entirely. The marker is fully no-arg. Field is `target_session_id` (not `session_id`) to avoid envelope collision. Consumer also writes a generic OOC wake-up turn into the resumed session's inbox. |
 
 Unknown event markers (not in the registered list) are silently ignored.
 

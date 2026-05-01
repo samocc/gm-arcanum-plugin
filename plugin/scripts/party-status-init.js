@@ -76,6 +76,61 @@ function readJson(filePath) {
 }
 
 /**
+ * Normalize a single canon status entry into the schema the working copy
+ * expects. Backfills fields added after the canon file was first written
+ * (role, classInfo, currency, concentration, system, AC). Mutates the source
+ * canon file in place if anything was filled in, so canon stays current with
+ * the schema. Returns the normalized object.
+ *
+ * Shared by compile mode here and by party-status-add-member.js.
+ */
+function compileEntry(canonPath, dirName, campaignSystem) {
+  const data = readJson(canonPath);
+  if (!data.name) {
+    throw new Error(`status.json missing 'name' field: ${canonPath}`);
+  }
+
+  let mutated = false;
+  if (typeof data.role !== "string") {
+    if (dirName.startsWith("pc-")) data.role = "pc";
+    else if (dirName.startsWith("co-")) data.role = "co";
+    mutated = true;
+  }
+  if (typeof data.classInfo !== "string") {
+    data.classInfo = "";
+    mutated = true;
+  }
+  if (typeof data.currency !== "number") {
+    data.currency = 0;
+    mutated = true;
+  }
+  if (typeof data.concentration !== "string") {
+    data.concentration = "";
+    mutated = true;
+  }
+  if (typeof data.system !== "string") {
+    data.system = campaignSystem || "TODO";
+    mutated = true;
+  }
+  if (typeof data.AC === "number") {
+    data.AC = { current: data.AC, max: data.AC };
+    mutated = true;
+  }
+  if (mutated) {
+    try {
+      fs.writeFileSync(canonPath, JSON.stringify(data, null, 2) + "\n");
+    } catch (err) {
+      // Canon could theoretically be read-only; log and continue.
+      console.error(
+        `warning: failed to backfill ${canonPath}: ${err && err.message ? err.message : err}`,
+      );
+    }
+  }
+
+  return data;
+}
+
+/**
  * Canonicalize a TTRPG system name into the dotted lowercase ID used in
  * status.json's `system` field. Known variants get the fixed canonical form;
  * anything else becomes a lowercase-hyphen slug of the source name.
@@ -169,59 +224,11 @@ function main() {
     // Cache the campaign's canonical TTRPG system ID once for system backfill.
     const campaignSystem = readCampaignSystem(campaignPath);
 
-    // Compile all canon files into one object keyed by folder slug
+    // Compile all canon files into one object keyed by folder slug.
+    // compileEntry handles schema backfill so pre-existing canon stays current.
     const statusObj = {};
     for (const { statusPath: filePath, dirName } of canonFiles) {
-      const data = readJson(filePath);
-      const name = data.name;
-      if (!name) {
-        console.error(`status.json missing 'name' field: ${filePath}`);
-        process.exit(1);
-      }
-
-      // Safeguard backfill for canon files missing fields added after creation.
-      // New characters get these populated at creation time (campaign-create,
-      // companion-sheet-internal); this branch keeps pre-existing canon files
-      // in sync with the current schema.
-      let mutated = false;
-      if (typeof data.role !== "string") {
-        if (dirName.startsWith("pc-")) data.role = "pc";
-        else if (dirName.startsWith("co-")) data.role = "co";
-        mutated = true;
-      }
-      if (typeof data.classInfo !== "string") {
-        data.classInfo = "";
-        mutated = true;
-      }
-      if (typeof data.currency !== "number") {
-        data.currency = 0;
-        mutated = true;
-      }
-      if (typeof data.concentration !== "string") {
-        data.concentration = "";
-        mutated = true;
-      }
-      if (typeof data.system !== "string") {
-        data.system = campaignSystem || "TODO";
-        mutated = true;
-      }
-      if (typeof data.AC === "number") {
-        data.AC = { current: data.AC, max: data.AC };
-        mutated = true;
-      }
-      if (mutated) {
-        try {
-          fs.writeFileSync(filePath, JSON.stringify(data, null, 2) + "\n");
-        } catch (err) {
-          // Canon could theoretically be read-only; log and continue.
-          console.error(
-            `warning: failed to backfill ${filePath}: ${err && err.message ? err.message : err}`,
-          );
-        }
-      }
-
-      // Key by folder slug; keep `name` inside the object as an explicit field.
-      statusObj[dirName] = data;
+      statusObj[dirName] = compileEntry(filePath, dirName, campaignSystem);
     }
 
     emit.ensureSessionDir(campaignPath, sessionId);
@@ -234,11 +241,24 @@ function main() {
   }
 }
 
-try {
-  main();
-} catch (err) {
-  console.error(
-    `party-status-init failed: ${err && err.message ? err.message : err}`,
-  );
-  process.exit(1);
+// Export shared helpers so sibling scripts (e.g., party-status-add-member.js)
+// can reuse the canon-scan + schema-backfill core without duplicating logic.
+module.exports = {
+  findCanonStatusFiles,
+  readJson,
+  canonicalizeSystem,
+  readCampaignSystem,
+  compileEntry,
+};
+
+// Only run main() when invoked as a CLI, not when require()'d as a module.
+if (require.main === module) {
+  try {
+    main();
+  } catch (err) {
+    console.error(
+      `party-status-init failed: ${err && err.message ? err.message : err}`,
+    );
+    process.exit(1);
+  }
 }

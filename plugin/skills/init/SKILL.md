@@ -2,6 +2,7 @@
 name: init
 description: Initialize a new GM Arcanum workspace — creates foundational files (README.md, directories, settings). Invoked by campaign-create as a pre-flight step.
 user-invocable: true
+disable-model-invocation: true
 allowed-tools: Bash
 ---
 

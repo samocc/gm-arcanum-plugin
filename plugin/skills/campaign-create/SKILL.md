@@ -21,7 +21,7 @@ The workflow is a sequential, multi-phase conversation that produces all foundat
 
 Campaign creation is a sequence of turns, each falling into one of two cadences. 
 
-**Conversation cadence (most of Phase 1, 2, 3, 4, 5):**
+**Conversation cadence (most of Phase 1, 2, 3, 4):**
 ```
 > PRIMARY
 [Conversational paragraph incorporating or responding to the player's last response]
@@ -35,7 +35,7 @@ Campaign creation is a sequence of turns, each falling into one of two cadences.
 [Single summary reply listing what was written + transition to next phase]
 ```
 
-> Campaign creation runs entirely via the `> PRIMARY` channel. The `> SECONDARY` channel is **disabled** and won't reach the player.
+> Campaign creation runs entirely on the `> PRIMARY` channel.
 
 ---
 
@@ -94,9 +94,29 @@ Proceed to Phase 1 once the two essentials are collected.
 
 **Balance:** Collaborative — player's ideas first, model helps generate the rest.
 
-The player has the most input here, but the model is an active creative partner — not a passive scribe. Lead the player through the following topics in order — each builds on the previous:
+The player has the most input here but the model should still operate as an active creative partner — not a passive scribe. Lead the player through the following topics in order — each builds on the previous:
+
 
 1. **Core info** — Start here. Race, Gender, Age, Class concept.
+
+*Note: Concrete Race, Class and Subclass must be defined before exiting this step — if the player's input is at concept stage ("a healer who's cynical"), work collaboratively to land on a specific Class and Subclass before moving on.*
+
+**IP Validation gate (after Core info, before Backstory).** With Race / Class / Subclass now concrete, check each against the matching section in `content-sources.md` at the workspace root. For any selection **not listed** (and not marked `Model Knowledge`), emit one IP Validation intent marker per unlisted selection on its own line:
+
+```
+>> **IP Validation: kind=Race, value=<Race>**
+>> **IP Validation: kind=Class, value=<Class>**
+>> **IP Validation: kind=Subclass, value=<Subclass>**
+```
+
+Then **stop** — do not advance to Backstory yet. The flow resumes on the next turn.
+
+**Resume handling:**
+- *Player confirmed rights*. Add a new entry to the matching section in `content-sources.md`: `kind=Race` → Races (`- Race — Model Knowledge`), `kind=Class` → Classes (`- Class — Model Knowledge`), `kind=Subclass` → Subclasses (`- Class / Subclass — Model Knowledge`, using the PC's class). Then continue to Backstory.
+- *Player asked for alternative*. Do NOT modify `content-sources.md`. Instead propose from the existing available ones and walk the player through a new selection. If the player steers it towards yet another selection not present in `content-sources.md` you must re-send the IP Validation gate and repeat the protocol until either the player's IP Validation gate reply confirms or the choices are all present in `content-sources.md`.
+
+If everything is listed (or marked `Model Knowledge`) on first check, continue to Backstory normally.
+
 2. **Backstory** — Ask what ideas or background they have in mind, help draft and expand into coherent narrative prose. Ensure every significant location, person, or organization has a proper name — propose names the player hasn't provided.
 3. **Appearance, Personality, and Alignment** — Ask for key ideas, help flesh out into specific, evocative descriptions. After discussing personality and reviewing the backstory, propose an alignment that fits — the player should feel it's a natural conclusion, not a cold question.
 4. **Key Figures or Items (Anchors)** — Suggest anchors from the backstory, player validates. Each anchor needs a Tagline and Description & Relationship.
@@ -132,12 +152,20 @@ Present the four tiers with session estimates:
 - Medium (15-25 sessions)
 - Long (30+ sessions)
 
-**4. Party Composition & Companion Recruitment**
+**4. Party Composition**
 
 Solo adventure or a party with companions? If companions, how many? Suggest 2 as the sweet spot for manageability, but not hard-enforced. If companions, ask how they join:
 - "Present from the start" — companions are part of the opening scenario
 - "Organic recruitment" — companions are recruited through gameplay
 If "present from start": ask for companion preferences (the Companions Pitch). Can be specific ("a cynical healer and a cocky swordsman") or open-ended ("varied party, balanced composition").
+
+Also ask whether the table has additional human-controlled PCs starting from session one (a friend joining, a multi-player table, "two of us are starting together"). PCs and companions can mix freely (e.g., 2 PCs + 1 companion).
+
+If the player chose **organic recruitment** (or "no companions") AND no extra PCs are requested, then proceed to step 5.
+
+**How "Present from the start" recruitment / add-PC actually happen.** Campaign creation builds with one PC only. Extra PCs and "Present from the start" companions are added afterwards on a dedicated meta-session that this skill spawns at the end. 
+
+Briefly explain this to the player: "Campaigns are created with a single player character to start. Once we have a campaign we can move on to adding the extra Player Characters or Companions, this runs as a separate dedicated session after campaign creation. I'll set it up for you when we finish here". Do not invoke `/gm:companion-recruit` or `/gm:add-pc` during this skill.
 
 **5. Safety Settings**
 
@@ -193,44 +221,15 @@ Write `world-info.md` to the campaign directory. Player reviews and adjusts.
 
 ---
 
-## Phase 4 + 5: PC Character Sheet + Companion Guides
+## Phase 4: PC Character Sheet
 
-**These phases overlap.** If companions are "present from start," fire companion guide generation in the background while building the PC's character-sheet in the foreground.
-
-### If Companions Are "Present from Start"
-
-#### Step A — Companion Differentiation
-
-Before invoking companion recruitment, make differentiation decisions to prevent convergence when multiple companions are generated simultaneously:
-
-- **If the player gave specific direction** per companion (e.g., "a cynical drow healer and a cocky halfling rogue"): each companion has a clear assignment.
-- **If the player was vague** (e.g., "just 2 companions"): analyze the PC's class + campaign-pitch + world-info to assign each companion differentiated roles. Keep assignments brief — the agent's creative judgment does the real character work. Include:
-  - Role direction (frontline, support, ranged, controller)
-  - Personality axis or contrast (e.g., "grounded and warm" vs. "guarded and cerebral")
-  - Race/culture suggestion grounded in `world-info.md`
-  - Class scope or restriction if needed to prevent overlap
-
-This is you doing the gap analysis ONCE and distributing assignments, not each agent independently running the same analysis.
-
-#### Step B — Invoke `/gm:companion-recruit` for Each Companion
-
-For each companion, invoke the `/gm:companion-recruit` skill following its standard workflow (Step 1 → guide agent → Step 2 → Player Card → Step 3 → approval). The differentiation assignment from Step A becomes the companion-specific context in the recruit briefing. Companion directories use the `co-[name]` naming convention (e.g., `campaign-members/co-gandalf/`).
-
-**Two modifications during campaign creation:**
-1. Include this constraint in each guide briefing: "Write ONLY to the companion directory. Do NOT modify any campaign-level documents."
-2. **Skip Step 4 (Campaign Integration)** from the recruit skill — all cross-cutting document updates are deferred to Phase 7 of campaign creation, where they are batched with the other generated documents.
-
-Fire all companion guide agents as **background** tasks.
-
-#### Step C — PC Character Sheet (Foreground)
-
-While companion guides generate in the background, build the PC's character-sheet collaboratively with the player. This workflow assumes D&D as system, adapt if needed.
+Build the PC's character-sheet. This workflow assumes D&D as system, adapt if needed.
 
 **Template:** Load `doc-templates/character-sheet.md` for structure and writing standards.
 
-**Reference check:** After confirming class and subclass, read `content-sources.md` in the workspace root and find the chosen class and subclass. If the Reference column links to a file, read it as the mechanical source of truth. If it says `Model Knowledge`, proceed using built-in knowledge. If the class or subclass is not listed in content-sources, inform the player: "This [class/subclass] isn't in your content sources yet. I can build from model knowledge, but edition-specific details may be less accurate. If you have reference material, you can add it to `ref/` and update `content-sources.md`." Then proceed — soft-warn, not a blocker.
+**Reference check.** Use the links in `content-sources.md` to find the reference files for the chosen Race / Class / Subclass, read those to ground your incoming work. Entries marked `Model Knowledge` (or absent) build from built-in knowledge.
 
-1. Confirm class and subclass (may already be established from character-info)
+1. Confirm class and subclass (already established from character-info in Phase 1). If the player changes their Race / Class / Subclass at this point, return to Phase 1's IP Validation gate before proceeding.
 2. **Level progression** — present popular options based on campaign length. These are suggestions, not fixed — the player can pick any combination. The starting level and level gain chosen here flow into `campaign-settings.md`.
 
    **One-Shot (3-5 sessions):** No level-ups. Player picks their level. Suggest Level 5 or 8-9.
@@ -271,25 +270,15 @@ While companion guides generate in the background, build the PC's character-shee
 4. Model builds the full sheet, player validates
 5. **Map Token** — Ask the player to choose their battle map token color from the party palette: 🟢 🔵 🟣 🟡. This is a cosmetic choice for combat maps. Write the selected color into the character-sheet's General section (`Map Token` field).
 
-Differences from companion sheet generation:
-- Role: "Player Character (PC)"
-- All decisions go through the player
-
 **Output:** Write two files to `campaign-[name]/campaign-members/pc-[name]/`:
 - `character-sheet.md` — the full sheet as built above
 - `status.json` — the party-status tracker seed. Load `doc-templates/status-json-template.md` for the schema — this is the authoritative shape and instructions. Populate in full: identity, static fields (`race`, `level`, `proficiencyBonus`, `abilities`, `Speed`), vitals, `Spells` slot tracker, class resources (with tooltips where clear), `skillProficiencies`/`skillExpertise`, `spells[]`, `feats[]`, `weapons[]`, and `SpellDC`/`SpellAttack` for spellcasters. All data is already in context from the sheet you just built.
 
-#### Step D — Player Cards and Approval
-
-Follow the `/gm:companion-recruit` workflow for Steps 2-3: present Player Cards when guide agents report back, get player approval, fire sheet agents in background on approval.
-
-If guides haven't reported by the time the PC sheet is done, fold the status into the sheet-completion reply ("PC sheet done. Companion guides still generating — continuing to Phase 6.") as part of the same single canonical response, then proceed to Phase 6.
-
-Note each companion's name, race, class, and motivations from the approved guides — you'll need these for campaign integration in Phase 7.
-
-### If Companions Are "Organic Recruitment"
-
-Skip this entire companion sub-flow. Note to the player that companions will be recruited through gameplay using `/gm:companion-recruit`. Proceed directly to the PC character-sheet (Step C above), then to Phase 6.
+After the files are written, sync the PC into the live session:
+```
+node ${CLAUDE_PLUGIN_ROOT}/scripts/party-status-add-member.js ${CLAUDE_SESSION_ID}
+```
+Include `>> **Party Sync**` in the response that confirms the PC sheet is complete — the PC appears on the companion app immediately.
 
 ---
 
@@ -306,7 +295,7 @@ Skip this entire companion sub-flow. Note to the player that companions will be 
 | TTRPG System | Startup |
 | Level | From Phase 4 (character-sheet) |
 | Level Gain | Campaign Length: Short=2, Medium=1-2, Long=1. Omit for One-Shot. |
-| Members | PC from Phase 4 + companions from Phase 5 (if any) |
+| Members | PC from Phase 4 only. Companions and additional PCs (if requested in Phase 2 Step 4) are added by the post-create meta-session, not here. |
 | Player Experience | Startup |
 | Combat Difficulty | Experience-based: New to D&D → Easy, Some experience → Normal, Veteran → Hard |
 | Response Verbosity | Default: Normal |
@@ -324,8 +313,7 @@ Write `campaign-settings.md` to the campaign directory.
 
 ## Phase 7: Batch Document Generation
 
-0. Wait for all companion sheet agents to report back (if any were dispatched). 
-1. Announce to the player that you have everything you and ask if they want to adjust anything else. WAIT for the player reply then proceed.
+1. Announce to the player that you have everything you need and ask if they want to adjust anything else. WAIT for the player reply then proceed.
 2. Create all remaining campaign infrastructure.
 
 Per the write-and-report cadence: perform all writes first, then the **Confirmation** step produces the single canonical reply listing what was created.
@@ -342,16 +330,15 @@ awk '/^```markdown$/{f=1;next} f && /^```$/{exit} f{print}' "$CLAUDE_PLUGIN_ROOT
 
 Then write each remaining document:
 
-1. **Campaign CLAUDE.md** — load `doc-templates/campaign-manifest.md` for template. Fill in campaign-specific details (name, setting subtitle, PC name, companion entries if any).
+1. **Campaign CLAUDE.md** — load `doc-templates/campaign-manifest.md` for template. Fill in campaign-specific details (name, setting subtitle, PC name).
 
 2. `campaign-summary` — load `doc-templates/campaign-summary.md` for writing standards:
-   - **The Party** paragraph: PC identity and motivation in one sentence, each companion with name/class/one-line. Written as coherent narrative prose.
+   - **The Party** paragraph: PC identity and motivation in one sentence. Written as coherent narrative prose.
    - `## Act I: [Title] (Ongoing)` — one sentence establishing the starting situation.
 
 3. **gm-canon.md** — load `doc-templates/gm-canon.md` for template. Copy the template structure, then populate:
    - If Core Arc is defined in campaign-pitch.md: create a `(Core Arc)` thread with Direction derived from the arc description, empty Party Knows, no breadcrumbs.
    - If Secondary Arcs are defined: create `(Secondary Arc)` threads.
-   - If companions were generated: create `(Companion)` threads from each `companion-guide.md` Motivations section. Thread name format: `### [Name]: [Arc Theme] (Companion)`.
    - If Core Arc is "Undefined": no Core Arc thread — leave Threads section with template comments only.
 
 4. `inventory.md` — load `doc-templates/inventory.md` for structure. Populate Key Items from narrative-central items identified during character creation. The Items section is for party shared supplies not equipped on any character sheet — do NOT duplicate personally equipped gear from character sheets here. Add Item Descriptions for all notable items (Key Items and notable equipment from character sheets). Consumables and Materials tables start with shared party supplies (basic rations, etc.).
@@ -366,13 +353,20 @@ Then write each remaining document:
      awk '/^```markdown$/{f=1;next} f && /^```$/{exit} f{print}' "$CLAUDE_PLUGIN_ROOT/skills/doc-templates/gm-directives-default.md" > "[campaign_dir]/gm-directives.md"
      ```
 
-6. **Verify party status files** — each character's `status.json` is written by its sheet generator (Phase 4 for the PC, `companion-sheet-internal` for companions). This step is a safety net: for each member directory under `campaign-members/`, verify `status.json` exists. If any are missing (e.g., a sub-agent that failed), generate the missing file from the character's sheet using `doc-templates/status-json-template.md`. Note any gaps in the Confirmation output.
+
 
 ### Confirmation
 
-List all created files and the campaign directory path, including each `status.json` written in step 6 (and any skipped members with the reason). Tell the player:
+List all created files and the campaign directory path then close with the existing prose terminus:
 
-"Your campaign is ready. Start a new Narrative Session to begin playing."
+  "Your campaign is ready. Start a new Narrative Session to begin playing."
+
+If the user expressed interest in extra PC or set companions to be "Present from the Start" you must also include the marker at the end of your reply:
+
+```
+>> **Start Session: mode=meta**
+```
+This is an event marker so you must produce an exact match, no trailing content.
 
 ---
 
@@ -384,17 +378,6 @@ When the player selects One-Shot (3-5 sessions), these differences apply across 
 - **Suggest higher starting level** (5 or 8-9) since the campaign is brief.
 - **No Campaign Stage progression** — omit Campaign Stage from campaign-settings or mark "N/A (One-Shot)".
 - **No level-up** — omit Level Gain and Last Level-Up from campaign-settings.
-- **Companion evolution opt-out** — if companions are generated, set `last-evolution: static` in `companion-guide.md` evolution frontmatter.
 - **Zone count:** 1-2 in `world-info.md`.
 - **Campaign summary fold** unlikely to trigger (too few sessions to accumulate).
 
----
-
-## Compact Instructions
-
-When context is compacted during campaign creation, preserve:
-- Campaign name, directory path, TTRPG system, and PC name
-- Which phase is in progress and its current step
-- All completed documents and their content summaries (they're written to disk — re-read if needed after compaction)
-- Companion agent status (dispatched, awaiting report, approved, rejected)
-- Player decisions and preferences stated during the conversation

@@ -1,4 +1,5 @@
 ---
+name: session-end
 description: Narrative session only. Requires user EXPLICIT request not implied not ambiguous. End the current session — save log, update events, update NPCs, increment session counter. Use --partial for a lightweight checkpoint.
 argument-hint: "--partial"
 ---
@@ -132,6 +133,8 @@ Read the summarization rules from `${CLAUDE_SKILL_DIR}/recent-events-rules.md`. 
 Use the session log you just wrote as your direct source — do not re-synthesize from scratch.
 
 If partials were folded in, the `recent-events.md` entry should cover the entire session across all segments. For each partial found you are allowed to ADD up to one paragraph on the length limit for the `recent-events.md` entry (only do so if needed to be able to cover the session scope).
+
+**Pending Arrival cleanup.** Read `recent-events.md` first. If it contains a `<!-- pending-arrival -->` HTML comment, remove the entire Pending Arrival block — from the comment line through the line immediately before the next `## Session ` heading (or EOF if no further sections).
 
 ### 8. Increment session counter
 In `campaign-settings.md`:

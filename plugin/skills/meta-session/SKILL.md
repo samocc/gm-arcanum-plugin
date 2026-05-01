@@ -59,13 +59,14 @@ First-turn-only additions: `>> **Session Mode: meta**` and `>> **Party Sync**` a
 3. Read `campaign-pitch.md` (tone, system, player preferences — general context).
 4. Invoke the `doc-templates` Skill, it contains the domain knowledge of where the different Writing Standards & Templates live which is essential to your tasks.
 5. If the player invoked a specific skill (e.g., `/gm:level-up`), proceed directly to that skill.
-   Otherwise, greet the player with current campaign state (level, party, sessions played) and ask what they'd like to work on.
+   Otherwise, greet the player with current campaign state (level, party, sessions played) and ask what they'd like to work on. If the SessionStart context block carries an `**Originating session id:** ...` line, this session was spawned from another session — most commonly a freshly-finished `/gm:campaign-create` looking to set up companions or additional PCs the player asked for at create time. Acknowledge that in the greeting and proactively suggest the relevant operation.
 
 ---
 
 ## Available Operations
 
-- **Party level-up:** `/gm:level-up` (or `/gm:level-up --auto`)
+- **Party level-up:** `/gm:level-up` (or `/gm:level-up --auto`, `--pc=name`, `--companions-only`)
+- **Add a new PC:** `/gm:add-pc` — generate character-info, sheet, and `status.json` for a new Player Character and integrate them into the campaign. Use when the player wants to add another PC to an existing campaign (multi-PC tables, mid-campaign joins). See "Recognizing Add-PC Scenarios" below.
 - **Custom campaign documents:** Create or edit custom documents (homebrew rules, rules references, lore supplements, custom systems, reference cards) and wire them into the campaign manifest. Invoke `/gm:gm-guide` for guidance on use cases, drafting, and integration.
 - **Partial-loading tuning (narrative-break marker):** See "Narrative-Break Marker" below.
 - **Roll macros:** `/gm:rolls-config` — draft or update a campaign's `rolls.json` macro file. Opt-in feature for bundling recurring turn patterns into single `>>` shortcuts. Only create when the player asks or describes roll-burden pain. See "Recognizing Roll Macro Scenarios" below.
@@ -96,6 +97,18 @@ This means MetaGM can apply the marker to tune narrative loading for:
 1. Read the target file.
 2. Insert, move, or remove the `<!-- narrative-break -->` line, and/or reorder content around it.
 3. Summarize the change in a blockquote for the player, noting what will now load narratively and what was added/removed from the default load.
+
+### Recognizing Add-PC Scenarios
+
+When the player describes adding another player character to the campaign, recognize the pattern and propose `/gm:add-pc`.
+
+**Examples**:
+
+- *"My friend wants to join the campaign"* / *"Can we add another PC?"* / *"Add a second PC"* — direct match.
+- *"What if [name] joined as a PC?"* / *"I want to bring in another character"* — direct match.
+- *"Can we play this with two characters?"* (mid-campaign) — direct match.
+
+This is distinct from `/gm:companion-recruit` — that creates a GM-controlled NPC companion, not a player-controlled PC. If the request is ambiguous (e.g., "add someone to the party"), ask whether the new member should be a Player Character (player-controlled) or a Companion (GM-controlled).
 
 ### Recognizing Custom Document Scenarios
 

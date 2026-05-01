@@ -42,6 +42,10 @@ async function main() {
     contextBody =
       `**Active campaign directory:** ${campaignPath}\n` +
       `**Claude Code session id:** ${sessionId}`;
+    const originatingId = process.env.GM_ARCANUM_ORIGINATING_SESSION_ID;
+    if (originatingId) {
+      contextBody += `\n**Originating session id:** ${originatingId}`;
+    }
   } else {
     contextBody =
       "**No active campaign.** `GM_ARCANUM_ACTIVE_CAMPAIGN` is unset — " +

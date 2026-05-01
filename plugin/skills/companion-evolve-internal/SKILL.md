@@ -22,7 +22,7 @@ Verify all of these are loaded before proceeding. If any are missing, read them 
 - [ ] `recent-events.md` — for specific events and interactions that demonstrate the relationship evolution
 - [ ] **gm-canon.md** — for the companion's arc thread (Direction and breadcrumbs provide context for how the companion should be developing)
 - [ ] `campaign-settings.md` — for `Sessions Played` (needed for frontmatter update)
-- [ ] `character-info.md` — the PC's identity and backstory. Grounds the relationship dynamic — understanding who the companion is building trust with.
+- [ ] `character-info.md` for every PC (`campaign-members/pc-*/character-info.md`) — PC identity and backstory. Grounds the relationship dynamic — understanding who the companion is building trust with. Multi-PC parties: read all.
 - [ ] **Other `companion-guide.md` docs** — if the party has multiple companions, read their guides for group dynamic context. Companion-to-companion relationships influence how each evolves.
 
 ## Procedure

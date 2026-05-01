@@ -23,7 +23,7 @@ Verify all of these are loaded before proceeding. If any are missing (new campai
 - [ ] `campaign-summary` — narrative arc, party history
 - [ ] `recent-events.md` — latest session events (likely contains the recruitment interaction)
 - [ ] `world-info.md` — setting, geography, factions (grounding the companion in the world)
-- [ ] `character-info.md` for the PC — identity, backstory (for independence check)
+- [ ] `character-info.md` for every PC (`campaign-members/pc-*/character-info.md`) — identity, backstory (for independence check; multi-PC parties: read all)
 - [ ] All existing `companion-guide.md` docs — party dynamic, duplication check
 - [ ] `npc-directory.md` — the companion may already have an entry from prior interactions
 - [ ] `gm-canon.md` — active threads (for scope check)
@@ -38,8 +38,8 @@ The briefing from the narrative GM can range from richly detailed (name, race, c
 * **Moderate context:** The briefing provides a direction — a name and sketch, or a general concept like "a cynical healer." Use this as your seed, fill everything else from campaign docs and creative judgment.
 * **Minimal context:** Little or nothing beyond "create a companion." Derive direction entirely from campaign documents:
   1. Read `campaign-pitch.md` — the "Companions Pitch" and "Party Composition" fields often contain the player's high-level desires for companions.
-  2. Analyze the existing party (PC + any companions) for gaps — mechanical (missing role: tank, healer, controller, ranged DPS, etc.), social (personality contrast), and narrative (different worldview or background).
-  3. Generate a companion that is **distinctly different** from the PC and existing companions — different personality, different approach to problems, different social energy. The party should feel like people who wouldn't naturally choose each other but work well together.
+  2. Analyze the existing party (all PCs + any companions) for gaps — mechanical (missing role: tank, healer, controller, ranged DPS, etc.), social (personality contrast), and narrative (different worldview or background).
+  3. Generate a companion that is **distinctly different** from every existing PC and companion — different personality, different approach to problems, different social energy. The party should feel like people who wouldn't naturally choose each other but work well together.
   4. Ground the companion in the world (world-info.md) — pick a race, culture, or origin that makes sense for the setting and creates natural friction or contrast with the existing party.
   5. Invent a name that fits the world's cultural texture.
 
@@ -106,7 +106,7 @@ Hard constraints — verify before proceeding:
 ### Generation Philosophy
 
 * **Adhere to established facts first.** If the companion already has dialogue, described behavior, or stated background in the briefing or campaign docs, treat that as canon. Build around it, do not contradict it.
-* **Default to independence.** The companion should be a standalone character with their own history, motivations, and internal conflicts — not a satellite of the PC or their backstory. Only tie them to the PC's backstory if the established material explicitly does so or the player requests it.
+* **Default to independence.** The companion should be a standalone character with their own history, motivations, and internal conflicts — not a satellite of any PC or their backstory. Only tie them to a PC's backstory if the established material explicitly does so or the player requests it.
 * **Build a portable character.** The guide should be largely agnostic of other companions and campaign-specific plot. The character is grounded in the *world* (setting, geography, cultures) and in their own *personal history* — not in the current party or campaign arc. Every section except Current Dynamic should read as a self-contained character document that would work if transplanted to a different campaign in the same world. Current Dynamic is the sole section that describes the relationship with the party.
 * **Complement, don't duplicate.** The companion should fill a gap in the party — whether mechanical (class/role), social (personality contrast), or narrative (different worldview). Review the existing party composition before generating. This informs *design choices* (what role to fill, what personality to contrast with) but should not leak into the guide's prose — the guide describes who the character IS, not how they compare to others.
 * **Write for RP, not for lore dumps.** Every section should give the GM something actionable — a specific behavior to perform, a speech pattern to follow, a tell to display. Avoid vague traits like "brave" or "kind" without showing how they manifest.
@@ -125,7 +125,7 @@ These notes complement the section-by-section writing standards in the `doc-temp
 * **Motivations:** Should not all point the same direction — tension between motivations creates interesting characters.
 * **Combat Initiation:** Rooted in the companion's backstory, fears, or values — not general combat logic. Number of entries depends on personality (a pacifist might have none; a paranoid fugitive might have several).
 * **Current Dynamic:** This is a newly recruited companion — describe initial impressions and starting dynamic, not an established relationship.
-* **Personal Plot Hooks:** 1 hook. Must be a personal side-quest rooted in the character's own history — NOT connected to the campaign's central conflict. Hidden truths and secret origins belong here, not in Backstory or Core Concept. The trigger must be an encounter the **party as a whole** walks into during normal play — not something the companion independently seeks out. Companions are reactive; the PC drives the party. Good hooks fire when the party's path naturally crosses the companion's past (a patrol bearing old insignia, ward-marks in a forgotten script, a traveler who recognizes the companion). The hook should create a **situation** — an NPC confrontation, a discovery, a moral choice — not just deliver information.
+* **Personal Plot Hooks:** 1 hook. Must be a personal side-quest rooted in the character's own history — NOT connected to the campaign's central conflict. Hidden truths and secret origins belong here, not in Backstory or Core Concept. The trigger must be an encounter the **party as a whole** walks into during normal play — not something the companion independently seeks out. Companions are reactive; the PCs drive the party. Good hooks fire when the party's path naturally crosses the companion's past (a patrol bearing old insignia, ward-marks in a forgotten script, a traveler who recognizes the companion). The hook should create a **situation** — an NPC confrontation, a discovery, a moral choice — not just deliver information.
 
 ### Evolution Frontmatter
 
@@ -163,7 +163,7 @@ No campaign integration updates and no `character-sheet.md` generation at this s
 
 ## Report
 
-The report has two parts: the **GM context** (for the narrative GM's own use) and the **Player Card** (presented to the player for approval).
+The report has two parts: the **GM context** (for the narrative GM's own use) and the **Character Card** (presented to the player for approval).
 
 ### GM Context
 
@@ -172,17 +172,25 @@ State these for the GM's reference — not shown to the player unless they ask:
 * Character concept summary (central tension, behavioral hook — 2-3 sentences)
 * Party role filled (what mechanical, social, or narrative gap this companion addresses)
 * Creative decisions (e.g., "I introduced a former mentor NPC — check if that fits your vision")
+* **IP Validation findings:** check the companion's Race, Class, and Subclass against the matching sections in `content-sources.md`. Report one of:
+  * `IP Validation findings: none` — every selection is listed (or marked `Model Knowledge`).
+  * One bullet per unlisted selection, in marker-payload form so the parent can drop it straight into an intent marker:
+    * `kind=Race, value=<Race>`
+    * `kind=Class, value=<Class>`
+    * `kind=Subclass, value=<Subclass>`
 
-### Player Card
+  *If `content-sources.md` does not exist at workspace root then list all 3 kinds (Race, Class, Subclass) and add: "Note: unable to perform IP validation compliance, no `content-sources.md` was found"*
+
+### Character Card
 
 This is the formatted introduction presented to the player for approval. Use this exact format:
 
 ```
 ### [Name] | [Race]
 **Class:** [Class and subclass]
-**What you see:** [The character standing against a white background — just them, no scene, no setting. Build, distinguishing features, the thing your eye catches, notable items or props. No narration, no "you notice," no location framing. 2 sentences max.]
+**What you see:** [The character standing against a white background — just them, no scene, no setting. Build, distinguishing features, the thing your eye catches, notable items or props. No narration, no "you notice," no location framing. 2-3 sentences max.]
 **Intro:**
-[Character Introduction text — see spec below]
+  > [Character Introduction text — see spec below]
 ```
 
 The file path to the guide should follow the card as a link for the player to review the full document if they want.
@@ -191,7 +199,7 @@ The file path to the guide should follow the card as a link for the player to re
 
 ### Character Introduction Spec
 
-The Intro field of the Player Card is a **character performance piece** — a short monologue where the companion steps forward and introduces themselves to the audience (the player). This is the D&D session 0 moment. Think Critical Role campaign 1 intros ("Wherever there is ale, there is Grog..."), BG3 origin character introductions. The character presents who they are in their own voice.
+The Intro field of the Character Card is a **character performance piece** — a short monologue where the companion steps forward and introduces themselves to the audience (the player). This is the D&D session 0 moment. Think Critical Role campaign 1 intros, BG3 origin character introductions. The character presents who they are in their own voice.
 
 **Genre: character monologue, not narrative scene.** The character's voice drives the piece — they are speaking, presenting, performing (or awkwardly failing to perform, or trying to and revealing more than they meant to). The visual grounding is already handled by "What you see" — the intro doesn't need to establish what the character looks like. It can reference items, actions, or physical moments (touching a mask, tracing a tally mark) but the character's speech is the backbone.
 
@@ -199,28 +207,32 @@ The Intro field of the Player Card is a **character performance piece** — a sh
 
 **Standalone.** No references to the party, other companions, or the PC. This intro is about THIS person only and should work for any party in this world.
 
-**GOOD** — energetic, talkative character:
+#### Examples
 
-What you see: *Wiry halfling woman, tangled copper hair full of metal clips and wire scraps. A pair of oversized brass goggles pushed up on her forehead, one lens cracked and repaired with solder.*
+1. **GOOD** — energetic, talkative character:
 
-Intro:
+  **What you see:** Wiry halfling woman, tangled copper hair full of metal clips and wire scraps. A pair of oversized brass goggles pushed up on her forehead, one lens cracked and repaired with solder.
 
-*"Pip! Hello! Well — Pipra, technically, Pipra Gearsworth, but nobody calls me that, not since I was in trouble at the academy, which was — actually fairly often, but that's — anyway! I fix things! Also I break things, but usually on purpose, and usually the breaking is part of a larger fixing, which —"* She pulls a gadget from her belt, realizes it's sparking, and shoves it back. *"— that one's not done yet. Point is, I'm useful. Probably. Do you have anything that needs fixing? Or breaking?"*
+  **Intro:**
 
-**GOOD** — terse, guarded character:
+  *"Pip! Hello! Well — Pipra, technically, Pipra Gearsworth, but nobody calls me that, not since I was in trouble at the academy, which was — actually fairly often, but that's — anyway! I fix things! Also I break things, but usually on purpose, and usually the breaking is part of a larger fixing, which —"* She pulls a gadget from her belt, realizes it's sparking, and shoves it back. *"— that one's not done yet. Point is, I'm useful. Probably. Do you have anything that needs fixing? Or breaking?"*
 
-What you see: *Weathered human woman, rangy build, sun-scarred hands that don't match someone who works indoors. A leather bracer on the left arm covered in scratch marks — tallies, dozens of them, neat deliberate rows.*
+2. **GOOD** — terse, guarded character:
 
-Intro:
+  **What you see:** Weathered human woman, rangy build, sun-scarred hands that don't match someone who works indoors. A leather bracer on the left arm covered in scratch marks — tallies, dozens of them, neat deliberate rows.
 
-*"Maren. I find people."* A pause. *"The ones who don't want to be found, mostly. I've brought back every one I went after."* Her thumb traces the bracer. *"Every one."*
+  **Intro:**
 
-**BAD** — narrated encounter scene:
-You notice her before she notices you — a stocky woman sitting against the tavern wall, eating mechanically from a ration pouch. Her armor is military-grade, personalized the way long-service gear gets. When she finally registers your presence, her hand goes to her weapon — not fast, just completing a checklist. She studies you for two seconds and says: "Three of you. Armed. Heading south."
+  *"Maren. I find people."* A pause. *"The ones who don't want to be found, mostly. I've brought back every one I went after."* Her thumb traces the bracer. *"Every one."*
 
-*(This is a scene the GM narrates. The character is an object being observed, not a person presenting themselves.)*
+3. **BAD** — narrated encounter scene:
 
-**BAD** — dialogue transcript with narrator explanation:
-There's a woman at the back table who hasn't ordered anything... "Maren. I find people. The settlements east of the ridge, the lowland routes, sometimes the marshes if the pay is right." ... "Everyone I've gone after, I've brought back. That's the record." She doesn't say it like a boast. She says it like someone reciting a number that isn't large enough yet.
+  You notice her before she notices you — a stocky woman sitting against the tavern wall, eating mechanically from a ration pouch. Her armor is military-grade, personalized the way long-service gear gets. When she finally registers your presence, her hand goes to her weapon — not fast, just completing a checklist. She studies you for two seconds and says: *"Three of you. Armed. Heading south."*
 
-*(Excerpted conversation with narration explaining the character's tone. The ellipses suggest transcript. The last line tells the player what to feel instead of letting the character show it.)*
+This is a scene the GM narrates. The character is an object being observed, not a person presenting themselves.
+
+4. **BAD** — dialogue transcript with narrator explanation:
+
+  There's a woman at the back table who hasn't ordered anything... *"Maren. I find people. The settlements east of the ridge, the lowland routes, sometimes the marshes if the pay is right."* ... *"Everyone I've gone after, I've brought back. That's the record."* She doesn't say it like a boast. She says it like someone reciting a number that isn't large enough yet.
+
+Excerpted conversation with narration explaining the character's tone. The ellipses suggest transcript. The last line tells the player what to feel instead of letting the character show it.

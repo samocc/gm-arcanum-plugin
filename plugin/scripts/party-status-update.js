@@ -143,6 +143,45 @@ async function runEventPass(campaignPath, sessionId, text) {
           await emit.appendNextEvent(transcriptFile, "intent/roll_initiative", envelope, {});
           break;
         }
+        case "Session End": {
+          await emit.appendNextEvent(transcriptFile, "intent/session_end", envelope, {});
+          break;
+        }
+        case "IP Validation": {
+          await emit.appendNextEvent(transcriptFile, "intent/ip_validation", envelope, {
+            kind: event.payload.kind,
+            value: event.payload.value,
+          });
+          break;
+        }
+        case "Start Session": {
+          // originating_session_id is auto-filled from the emitting session —
+          // it's always the same value, so the GM doesn't carry it in the marker.
+          await emit.appendNextEvent(transcriptFile, "intent/start_session", envelope, {
+            mode: event.payload.mode,
+            originating_session_id: sessionId,
+          });
+          break;
+        }
+        case "Resume Session": {
+          // target_session_id is auto-filled from the env var passed at session
+          // spawn (GM_ARCANUM_ORIGINATING_SESSION_ID). If absent, this combat /
+          // meta session was launched standalone and Resume has no target —
+          // skip emission and warn so the producer-side guard catches it.
+          const targetId = process.env.GM_ARCANUM_ORIGINATING_SESSION_ID;
+          if (!targetId) {
+            logWarning(
+              "event-marker",
+              sessionId,
+              "Resume Session skipped: GM_ARCANUM_ORIGINATING_SESSION_ID not set",
+            );
+            break;
+          }
+          await emit.appendNextEvent(transcriptFile, "intent/resume_session", envelope, {
+            target_session_id: targetId,
+          });
+          break;
+        }
         default:
           // Unknown type shouldn't reach here (parser filters), but be defensive.
           logWarning("event-marker", sessionId, `Unhandled event type: ${event.type}`);
