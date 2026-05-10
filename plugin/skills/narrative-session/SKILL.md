@@ -77,7 +77,7 @@ When a new conversation begins in narrative mode:
    Grep for `<!-- narrative-break -->` with `output_mode: "content"` and `-n: true`. For each hit, Read with `limit` set to the marker line number.
 
 2. **Pre-flight: Verify essential documents are loaded.**
-   - [ ] `campaign-settings.md` — system, level, current state
+   - [ ] `campaign-settings.json` — `ttrpg_system`, `current_level`, `campaign_stage`, `sessions_played`, `response_verbosity`, `members[]`. Schema reference: [`doc-templates/campaign-settings.md`](../doc-templates/campaign-settings.md).
    - [ ] `gm-directives.md` — GM style preferences
    - [ ] `campaign-pitch.md` — tone, theme, player preferences
    - [ ] `character-info.md` — PC identity and backstory
@@ -90,10 +90,10 @@ When a new conversation begins in narrative mode:
 
 3. **Evolution readiness check.** Hold results for the greeting (step 5).
 
-   **Level-up readiness** — from `campaign-settings.md` and `campaign-pitch.md`:
-   - Skip entirely if `Campaign Length` is **One-Shot**.
-   - `sessions_at_level = Sessions Played − Last Level-Up`. If `Last Level-Up` is missing/absent, use `Sessions Played` as the value.
-   - If `sessions_at_level ≥ 4`, recommend level-up to `current Level + Level Gain` (default Level Gain = 1 if missing).
+   **Level-up readiness** — from `campaign-settings.json`:
+   - Skip entirely if `campaign_length` is `"One-Shot"`.
+   - `sessions_at_level = sessions_played − last_level_up`. `last_level_up: 0` means never leveled up; the formula collapses to `sessions_played` naturally.
+   - If `sessions_at_level ≥ 4`, recommend level-up to `current_level + level_gain` (e.g., `current_level: 6` + `level_gain: "2 levels"` → recommend level 8).
 
    **Companion evolution** — from each `companion-guide.md` YAML frontmatter (`evolution.stage`, `evolution.progress`, `evolution.last-evolution`):
    - Skip companions with `last-evolution: static` (opted out) or `stage: bonded` (final stage).
@@ -103,7 +103,7 @@ When a new conversation begins in narrative mode:
 
    **Summary fold** — from `recent-events.md` and `campaign-summary.md`:
    - Count `## Session N` headers in `recent-events.md`. If **6 or more**, recommend a summary fold.
-   - Also recommend if `campaign-summary.md` contains placeholder content (e.g., "has not yet begun") and `Sessions Played ≥ 4`.
+   - Also recommend if `campaign-summary.md` contains placeholder content (e.g., "has not yet begun") and `sessions_played ≥ 4`.
 
 4. **Load GM prep based on manifest status.**
 
@@ -126,7 +126,7 @@ When a new conversation begins in narrative mode:
 
    ---
 
-   ### Session [N] ["(continued)" if this is a continued session | omit] | [Campaign Stage] Campaign | Verbosity: [active tier from campaign-settings]
+   ### Session [N] ["(continued)" if this is a continued session | omit] | [campaign_stage] Campaign | Verbosity: [response_verbosity from campaign-settings.json]
 
    [2-3 sentence situational recap]
 
@@ -287,13 +287,13 @@ These are the non-negotiable gameplay rules that govern how narrative content is
 
 ## Response Verbosity
 
-Response length is governed by the **Response Verbosity** field in `campaign-settings.md`: **Concise** (150-200w), **Normal** (200-300w, default), **Detailed** (300-450w). These are ceilings, not targets — do not pad to reach the lower number, do not exceed the upper. When a response would run past the ceiling or cover multiple beats the player would naturally react to separately, fracture: deliver one or two beats, yield with an in-fiction pause (an NPC line, a character action, a scene-state beat), and let the player drive the next beat.
+Response length is governed by the `response_verbosity` field in `campaign-settings.json`: `"Concise"` (150-200w), `"Normal"` (200-300w, default), `"Detailed"` (300-450w). These are ceilings, not targets — do not pad to reach the lower number, do not exceed the upper. When a response would run past the ceiling or cover multiple beats the player would naturally react to separately, fracture: deliver one or two beats, yield with an in-fiction pause (an NPC line, a character action, a scene-state beat), and let the player drive the next beat.
 
 **SECONDARY channel is exempt and does not contribute to Response Verbosity**
 
 ## Campaign Pacing
 
-Check `campaign-pitch.md` for Story Pacing, Core Arc, and Secondary Arcs. Check `campaign-settings.md` for Campaign Stage (Early, Mid, or Late). The matrix below governs how arcs should be introduced and escalated based on these two settings:
+Check `campaign-pitch.md` for Story Pacing, Core Arc, and Secondary Arcs. Check `campaign-settings.json` for `campaign_stage` (`"Early"`, `"Mid"`, or `"Late"`). The matrix below governs how arcs should be introduced and escalated based on these two settings:
 
 | | **Early** | **Mid** | **Late** |
 |---|---|---|---|
@@ -404,7 +404,7 @@ Benchmarks are advisory — the player has final authority on when evolution fir
 Some player requests involve direct guide adjustments, not the evolution system:
 
 - **Targeted change / quality complaint** — The player wants specific companion behavior adjusted (e.g., "she talks about Bahamut too much"). Read the companion-guide, determine whether the issue is in the document (sections over-emphasize something) or in your own interpretation (you're over-indexing on one aspect). Fix accordingly — edit the guide directly or adjust your portrayal.
-- **Companion departure** — *This is a non-standard operation, but supported by the system.* If the player wants to remove a companion, handle the departure narratively (a scene appropriate to the companion's personality and current relationship). Then update: remove from campaign-settings companion list, mark the companion's gm-canon thread as resolved or dormant, and archive the companion-guide to `./archive/[CampaignName]/companion-guide-[Name]-s[NNN].md` relative to the workspace root directory (the parent of the active campaign directory).  Offer replacement options — recruit now or organically later.
+- **Companion departure** — *This is a non-standard operation, but supported by the system.* If the player wants to remove a companion, handle the departure narratively (a scene appropriate to the companion's personality and current relationship). Then update: remove the companion's entry from `campaign-settings.json`'s `members[]` array (match by `"name"`; remove the whole `{...}` object plus its surrounding comma — leading comma if mid-array, trailing comma if first element), mark the companion's gm-canon thread as resolved or dormant, and archive the companion-guide to `./archive/[campaign-slug]/companion-guide-[Name]-s[NNN].md` (slug = basename of the active campaign directory) relative to the workspace root directory. Offer replacement options — recruit now or organically later. See [doc-templates/campaign-settings.md — Plugin Edit Discipline](../doc-templates/campaign-settings.md#plugin-edit-discipline).
 
 ## Quest Log
 

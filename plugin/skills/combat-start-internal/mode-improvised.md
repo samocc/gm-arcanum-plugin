@@ -19,7 +19,7 @@ Verify all of these are loaded before filling the briefing. If any are missing, 
 ### Required Reads
 
 - [ ] `${CLAUDE_SKILL_DIR}/combat-briefing-template.md` — the output template
-- [ ] `campaign-settings.md` — system, party level, Combat Difficulty target
+- [ ] `campaign-settings.json` — `ttrpg_system`, `current_level`, `combat_difficulty`. Schema reference: [`doc-templates/campaign-settings.md`](../doc-templates/campaign-settings.md).
 - [ ] All `character-sheet.md` docs (PC + companions) — for Map Token assignments and, when calibrating, a full picture of party capabilities. Verify each has a Map Token field; if missing, assign from 🟢 🔵 🟣 🟡.
 - [ ] All `companion-guide.md` docs — Combat Initiation triggers and Problem Solving style for the Notes field
 - [ ] `world-info.md` — setting context and geography (essential for improvised encounters — the monsters and flavor must match the setting)
@@ -35,7 +35,7 @@ Verify all of these are loaded before filling the briefing. If any are missing, 
 
 You are designing this encounter from scratch, so calibration always runs. You own the final encounter difficulty.
 
-The Combat Difficulty target in `campaign-settings.md` and the Combat Calibration in `advanced-settings.md` (if it exists) are your guides.
+The `combat_difficulty` target in `campaign-settings.json` and the Combat Calibration in `advanced-settings.md` (if it exists) are your guides.
 
 > **Key Insight:** Standard TTRPG difficulty tiers assume a default party. A synergistic or optimized party can make standard *Hard* or *Deadly* feel easy. The solution is not to just crank CR — that produces creatures out of proportion for the zone and breaks immersion. Instead, do targeted adjustments: more durable monsters, abilities that target party weaknesses, volume, external factors, etc.
 
@@ -64,7 +64,7 @@ The Combat Difficulty target in `campaign-settings.md` and the Combat Calibratio
 
 ### Calibration Process
 
-1. Read the target Combat Difficulty from `campaign-settings.md`
+1. Read the target `combat_difficulty` from `campaign-settings.json`
 2. Read Combat Calibration from `advanced-settings.md` (if exists)
 3. Design the encounter to hit the target tier for this party
 4. If Combat Calibration exists, target **1-3** of the listed vulnerability points — not all at once, or the party will start feeling targeted. The goal is to challenge a few weaknesses, not to nullify their strengths.

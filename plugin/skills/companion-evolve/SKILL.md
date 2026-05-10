@@ -41,8 +41,10 @@ Sessions played: [N]. Last evolution: [session N or never].
 
 ## After Completion
 
-When the agent reports back, relay to the player at a natural pause:
-- Confirm which companion(s) were evolved and the transition (e.g., "Xalyth: acquaintance → teammate")
-- Mention the archive location
-- Summarize the key changes the agent reported
-- Suggest the player review the updated guide — especially any sections the agent flagged for review
+When the agent reports back, drop a lean inline OOC marker on its own line at a natural pause:
+
+```
+> 🌟 [Companion]: [old stage] → [new stage]. Previous companion RP guide has been Archived.
+```
+
+One line per companion if multiple were evolved in the same dispatch. Nothing more — the player reviews the updated guide at their convenience. No need to rely where it was archived unless the player asks then you rely trough the `SECONDARY` channel.

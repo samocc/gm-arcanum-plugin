@@ -25,8 +25,8 @@ A macro is a shortcut that expands a single `>>` line into a whole chain of roll
 Read these before drafting:
 
 - [ ] **Campaign `CLAUDE.md`** — active campaign and document manifest
-- [ ] **`campaign-settings.md`** — system, level, party composition
-- [ ] **PC `character-sheet.md`** — attack bonuses, damage dice, features, class/subclass
+- [ ] **`campaign-settings.json`** — `ttrpg_system`, `current_level`, `members[]`. Schema reference: [`doc-templates/campaign-settings.md`](../doc-templates/campaign-settings.md).
+- [ ] **Each PC's `character-sheet.md`** — attack bonuses, damage dice, features, class/subclass
 - [ ] **Existing `rolls.json`** if one is already present in the campaign directory (for update work)
 
 For macros that cover companion rolls as well, read the relevant companion sheets too. In practice, macros are almost always PC-focused — the player runs their own rolls, companions are GM-handled.
@@ -131,7 +131,7 @@ Determine whether this is a **new draft** or an **update**:
 
 ### Step 2 — Analyze the Character
 
-Read the PC's character sheet. Identify:
+Read each PC's character sheet. Identify, per PC:
 - Class, subclass, level
 - Main attack routine (melee, ranged, cantrip, etc.)
 - Attack bonuses and damage dice for each attack

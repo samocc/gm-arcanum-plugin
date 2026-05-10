@@ -19,7 +19,7 @@ Generate a complete companion-guide for a new or redesigned companion.
 Verify all of these are loaded before proceeding. If any are missing (new campaigns), skip them.
 
 - [ ] `campaign-pitch.md` — tone, companions pitch, companion recruitment preferences, core and secondary arcs
-- [ ] `campaign-settings.md` — system, level, party composition, sessions played
+- [ ] `campaign-settings.json` — `ttrpg_system`, `current_level`, `members[]`, `sessions_played`. Schema reference: [`doc-templates/campaign-settings.md`](../doc-templates/campaign-settings.md).
 - [ ] `campaign-summary` — narrative arc, party history
 - [ ] `recent-events.md` — latest session events (likely contains the recruitment interaction)
 - [ ] `world-info.md` — setting, geography, factions (grounding the companion in the world)
@@ -44,6 +44,8 @@ The briefing from the narrative GM can range from richly detailed (name, race, c
   5. Invent a name that fits the world's cultural texture.
 
 In all cases, the campaign documents are your primary grounding. The briefing adds session-specific context on top.
+
+**Child / opted-out constraint.** If the briefing's Player Notes (or in-context details) indicate a child or adolescent companion, or an adult companion described with child-coded physical attributes, the generated `companion-guide.md`'s `Romance Framework` section MUST read exactly `Disabled — child companion, romance framework does not apply.`
 
 ---
 

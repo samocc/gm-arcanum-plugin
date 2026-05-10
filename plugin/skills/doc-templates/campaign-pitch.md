@@ -35,7 +35,6 @@ If the campaign is a traditional D&D adventure — explore, fight, loot, progres
 
 ## Story and Pacing
 
-* **Campaign Length:** [One-Shot (3-5 sessions) / Short (8-12 sessions) / Medium (15-25 sessions) / Long (30+ sessions)]
 * **Story Scope:** [The desired narrative scale. Examples: Local heroes saving a town, national-level political conflict, world-saving epic quest. Can escalate — e.g. "Starts small and local to gradually grow into larger stakes."]
 * **Story Pacing:** [How quickly the core arc surfaces and drives play. Examples: "Slow burn — start local and self-contained, core arc stays distant for several sessions before gradually surfacing" / "Steady build — core arc is present from the start, escalates gradually" / "Immediate — core arc is the content from session one"]
 * **Core Arc:** [The campaign's central storyline or conflict. Can be defined at creation from character-info or set to "Undefined — let it emerge through play." Updated via evolutions system when an arc crystallizes or resolves.]

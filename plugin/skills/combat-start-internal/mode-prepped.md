@@ -19,7 +19,7 @@ Verify all of these are loaded before filling the briefing. If any are missing, 
 
 - [ ] `${CLAUDE_SKILL_DIR}/combat-briefing-template.md` — the output template
 - [ ] The **combat-data file** referenced in the dispatch (`Module Prep Reference` field). **If this file does not exist at the path provided, abort immediately with a clear error — do not attempt to improvise the encounter.** gm-main owns recovery for missing prep files.
-- [ ] `campaign-settings.md` — system, level, Combat Difficulty target
+- [ ] `campaign-settings.json` — `ttrpg_system`, `current_level`, `combat_difficulty`. Schema reference: [`doc-templates/campaign-settings.md`](../doc-templates/campaign-settings.md).
 - [ ] All `character-sheet.md` docs (PC + companions) — verify each has a Map Token field; if missing (legacy character), assign from available party colors (🟢 🔵 🟣 🟡) and note the assignment in the briefing.
 
 ### Conditional Reads

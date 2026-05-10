@@ -7,7 +7,7 @@ disable-model-invocation: true
 
 # Level Up
 
-Level up the party. Updates `character-sheet.md` doc for every party member and the party level in `campaign-settings.md`.
+Level up the party. Updates `character-sheet.md` doc for every party member and the party level in `campaign-settings.json`.
 
 ## Pre-flight Check
 
@@ -17,7 +17,7 @@ Level up the party. Updates `character-sheet.md` doc for every party member and 
 
 - [ ] **`meta-session.md`** — session type instructions (identity, output style, archive protocol)
 - [ ] **Campaign `CLAUDE.md`** — active campaign and document manifest
-- [ ] **`campaign-settings.md`** — system, level, party composition, session count
+- [ ] **`campaign-settings.json`** — `ttrpg_system`, `current_level`, `level_gain`, `members[]`, `sessions_played`, `last_level_up`. Schema reference: [`doc-templates/campaign-settings.md`](../doc-templates/campaign-settings.md).
 - [ ] `campaign-pitch.md` — tone, system, player preferences
 
 ---
@@ -43,7 +43,7 @@ If the player has already indicated a preference, default to that.
 
 ### Parallel Sessions
 
-Multi-PC tables can level up in parallel: each player opens their own MetaGM session against the shared campaign workspace and runs `/gm:level-up --pc=their-pc-name`. Companion level-ups happen once via `--companions-only` (or roll into one of the PC runs by adding `--auto` to that invocation). Bookkeeping (`Level`, `Last Level-Up` in `campaign-settings.md`) is last-write-wins — values are deterministic from `Level Gain`, so parallel writes converge on the same final state.
+Multi-PC tables can level up in parallel: each player opens their own MetaGM session against the shared campaign workspace and runs `/gm:level-up --pc=their-pc-name`. Companion level-ups happen once via `--companions-only` (or roll into one of the PC runs by adding `--auto` to that invocation). Bookkeeping (`current_level`, `last_level_up` in `campaign-settings.json`) is last-write-wins — values are deterministic from `level_gain`, so parallel writes converge on the same final state.
 
 `argument-hint` only advertises `--auto` to keep the surface compact; the additional flags are documented here in the body.
 
@@ -53,7 +53,7 @@ Multi-PC tables can level up in parallel: each player opens their own MetaGM ses
 
 ### Step 1 — Determine Level Change
 
-Read campaign-settings `Level` and `Level Gain` fields under Party. Propose the new level as `current level + Level Gain` (e.g., if Level is 6 and Level Gain is 2, propose level 8). Confirm with the player — they can override the target level.
+Read `current_level` and `level_gain` from `campaign-settings.json`. Propose the new level as `current_level + level_gain` (e.g., if `current_level: 6` and `level_gain: "2 levels"`, propose level 8). Confirm with the player — they can override the target level.
 
 For multi-level jumps (e.g., level 5 → 7), all changes across all levels gained are compiled together before any file writes. The player sees the cumulative result with a per-level breakdown showing what came from each level.
 
@@ -159,7 +159,7 @@ Preserve all existing content, customizations, and formatting. Only change the v
 
 After Step 1 (level change confirmed):
 
-1. For each companion in campaign-settings `Members`, compose an agent briefing by adapting the reference below.
+1. For each entry in `campaign-settings.json` `members[]` with `role: "Companion"`, compose an agent briefing by adapting the reference below.
 2. Spawn a **background** `gm-evolution` agent for each companion.
 3. Immediately proceed with the PC collaborative level-up (Steps 3-6) — for multi-PC parties, walk each PC in turn (or just the `--pc=name` target if specified). Under `--companions-only`, skip this step entirely.
 
@@ -189,7 +189,7 @@ Class/subclass reference files are under `ref/`. Scan for matches to this compan
 
 ### After Completion
 
-When companion agents report back, relay each report to the player:
+When companion agents report back, relay each report to the player (level-up runs in MetaGM — the whole session is `> PRIMARY`; SECONDARY is disabled):
 - Companion name and level change
 - Summary of what changed (features, HP, spells, ASI/feat)
 - Archive location
@@ -249,9 +249,11 @@ Lean toward thematic, on-brand picks that fit the character's identity and estab
 ## Wrap-Up
 
 After all characters are done (including companion agent reports in autonomous mode):
-1. **Update `campaign-settings.md`** — *skip this step entirely under `--companions-only`.* Default, `--auto`, and `--pc=name` runs all perform this update; under parallel sessions it's last-write-wins (values converge from `Level Gain`).
-   - Set the `Level` field to the new level.
-   - Set the `Last Level-Up` field (under Session Tracking) to the current `Sessions Played` value. If the field does not exist, add it after `Campaign Stage`.
+1. **Update `campaign-settings.json`** — *skip this step entirely under `--companions-only`.* Default, `--auto`, and `--pc=name` runs all perform this update; under parallel sessions it's last-write-wins (values converge from `level_gain`).
+   - Edit `current_level` to the new level. Fragment: `"current_level": <old>,` → `"current_level": <new>,`. Preserve the trailing comma.
+   - Edit `last_level_up` to the current `sessions_played` value. Fragment: `"last_level_up": <old>,` → `"last_level_up": <sessions_played>,`. Preserve the trailing comma.
+
+   Both fields are guaranteed present in the schema. See [doc-templates/campaign-settings.md — Plugin Edit Discipline](../doc-templates/campaign-settings.md#plugin-edit-discipline).
 2. **Update each leveled PC's `status.json`.** Run this once per PC processed in this invocation. (Companion `status.json` files are updated by `level-up-internal` as part of each companion's sub-agent flow — no work needed here for companions.) Skip entirely under `--companions-only`.
 
    - Load `doc-templates/status-json-template.md` for schema reference.

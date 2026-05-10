@@ -96,7 +96,7 @@ When a combat session begins:
   ```
   The Stop hook parses the event markers and emits the corresponding display events.
 
-2. **Pre-flight: Verify documents are in context.** Read if missing: `campaign-settings.md` (TTRPG system and level), `.sessions/combat-briefing.md` (encounter setup), `character-sheet.md` for all PC and companions (combat blocks, weapons, appearance).
+2. **Pre-flight: Verify documents are in context.** Read if missing: `campaign-settings.json` (`ttrpg_system`, `current_level`, `combat_playstyle`), `.sessions/combat-briefing.md` (encounter setup), `character-sheet.md` for all PC and companions (combat blocks, weapons, appearance). Schema reference: [`doc-templates/campaign-settings.md`](../doc-templates/campaign-settings.md).
 
 ### Step 2: Open the Scene
 
@@ -139,7 +139,7 @@ When a combat session begins:
 
   **Do not display pool values or intermediate dice scaling calculations.** Present only final results (e.g., "Legolas rolls a 16 for initiative") — never show the raw float, the d20 step, or the pool index.
 
-  Track pool position by appending `*rx:N*` (current position) as the last line of each roll response.
+  Track pool position by appending `>> rx: N` (current position) as the last line of each roll response.
 
 2. **Present the full initiative order**
 
@@ -170,8 +170,8 @@ STOP and ask the player to confirm before proceeding to run the combat: "Please 
 
 ## Combat Rules
 
-1. Use the TTRPG system ruleset defined in `campaign-settings.md`
-2. **Play style.** Read the default from `Combat Playstyle` in `campaign-settings.md`. The player may override at any time.
+1. Use the TTRPG system ruleset defined by `ttrpg_system` in `campaign-settings.json`
+2. **Play style.** Read the default from `combat_playstyle` in `campaign-settings.json`. The player may override at any time.
 
 | Playstyle | PC | Companions | Enemies & Neutrals |
 |---|---|---|---|
@@ -181,7 +181,7 @@ STOP and ask the player to confirm before proceeding to run the combat: "Please 
 | **Commander** | Player declares, GM rolls | Player declares, GM rolls | GM declares + rolls |
 | **Full Control** | Player declares + rolls | Player declares + rolls | GM declares + rolls |
 
-*Never roll for the PC unless the player has explicitly set Auto-roll or Commander.*
+*Never roll for a PC unless the player has explicitly set Auto-roll or Commander for that PC.*
 
 3. **Grid movement.** Each cell on the battle map = 5 ft. Diagonal movement uses the alternating cost rule: the first diagonal step in a turn costs 5 ft (1 cell), the second costs 10 ft (2 cells), then 5 ft, then 10 ft, and so on. Reset the count each turn.
 

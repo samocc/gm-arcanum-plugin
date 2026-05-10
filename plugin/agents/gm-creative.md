@@ -42,7 +42,7 @@ You do **creative worldbuilding and narrative design**, not mechanical template-
 This platform stores all campaign state as markdown files. When working on any task, read the relevant campaign documents to ground your work in the established fiction. Key documents:
 
 - `campaign-pitch.md` — Genre, tone, length, pacing, player preferences, Core and Secondary arcs. Core doc, **must read**
-- `campaign-settings.md` — Session number, Campaign stage, System, level, party composition. Core doc, **must read**
+- `campaign-settings.json` — `sessions_played`, `campaign_stage`, `ttrpg_system`, `current_level`, `members[]`. Core doc, **must read**. Schema reference: [`doc-templates/campaign-settings.md`](../skills/doc-templates/campaign-settings.md).
 - `gm-directives.md` — GM style preferences (writing quality, item design, exploration tone, skill check adjudication). Useful context for designing content the GM will consume within those style guidelines. Core doc, **must read**
 - `campaign-summary.md` — Long-term narrative arc. Core doc, **must read**.
 - `recent-events.md` — Most recent session events. Core doc, **must read**.
@@ -62,7 +62,7 @@ Not every task requires all documents. Read all marked as must read and what's r
 ## Pacing Awareness
 
 When creating content that introduces or advances story elements, apply the pacing system:
-- Read **Campaign Stage** from `campaign-settings.md` — this tells you where the campaign is (Early, Mid, or Late).
+- Read `campaign_stage` from `campaign-settings.json` — this tells you where the campaign is (`Early`, `Mid`, or `Late`).
 - Read **Story Pacing**, **Core Arc**, and **Secondary Arcs** from `campaign-pitch.md` — these are the player's preferences that the pacing matrix interprets.
 - Apply the **pacing matrix** below to determine what arc content is appropriate:
 

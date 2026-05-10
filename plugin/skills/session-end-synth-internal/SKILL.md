@@ -69,7 +69,9 @@ For each companion, append a new `### Session N` block to the companion-guide's 
 
 ### 2. Companion progress grading (update frontmatter)
 
-For each companion, evaluate each PC's interactions with them through the session and assign a progress grade. In multi-PC parties, sum across all PC interactions — a companion who bonded with one PC and clashed with another lands somewhere between the two extremes; weigh accordingly.
+**Skip companions at `stage: bonded`.** Bonded is the final stage in the lifecycle model — there is no further evolution to track progress toward. Do not grade and do not update `evolution.progress` for these companions. Beats writing in step 1 still happens; only the progress accumulator is frozen.
+
+For each remaining companion, evaluate each PC's interactions with them through the session and assign a progress grade. In multi-PC parties, sum across all PC interactions — a companion who bonded with one PC and clashed with another lands somewhere between the two extremes; weigh accordingly.
 
 | Grade | Progress | When |
 |---|---|---|

@@ -18,7 +18,7 @@ This skill provides shared writing standards and structural templates for campai
 | Character Info | `${CLAUDE_SKILL_DIR}/character-info.md` | Creating or modifying `character-info.md` documents |
 | Campaign Pitch | `${CLAUDE_SKILL_DIR}/campaign-pitch.md` | Creating or modifying `campaign-pitch.md` documents |
 | World Info | `${CLAUDE_SKILL_DIR}/world-info.md` | Creating or modifying `world-info.md` documents |
-| Campaign Settings | `${CLAUDE_SKILL_DIR}/campaign-settings.md` | Creating or modifying `campaign-settings.md` documents |
+| Campaign Settings | `${CLAUDE_SKILL_DIR}/campaign-settings.md` | Schema, read/write contract, and member slug derivation rule for the per-campaign `campaign-settings.json` config file. Read when reading or editing settings — Field Reference is the canonical per-field table; Plugin Edit Discipline section covers safe JSON mutation patterns. |
 | GM Canon | `${CLAUDE_SKILL_DIR}/gm-canon.md` | Creating or modifying `gm-canon.md` documents |
 | Inventory | `${CLAUDE_SKILL_DIR}/inventory.md` | Creating or modifying `inventory.md` documents |
 | Campaign Manifest | `${CLAUDE_SKILL_DIR}/campaign-manifest.md` | Creating campaign CLAUDE.md (the document index) |

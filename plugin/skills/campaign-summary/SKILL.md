@@ -10,7 +10,7 @@ Fold `recent-events.md` into `campaign-summary.md`. This is an integrative rewri
 
 The work runs in the background — tell the player what's happening and continue gameplay.
 
-**Dispatch:** Compose the agent briefing by adapting the reference below. Spawn as a **background** `gm-evolution` agent. Do not wait for completion — continue gameplay. When the agent reports back, acknowledge to the player at a natural pause.
+**Dispatch:** Compose the agent briefing by adapting the reference below. Spawn as a **background** `gm-evolution` agent. Do not wait for completion — continue gameplay. When the agent reports back, drop a lean inline OOC marker on its own line at a natural pause: `> 📜 Campaign summary fold complete.` Nothing more — the player can review `campaign-summary.md` at their convenience.
 
 **Agent briefing reference:**
 
@@ -30,12 +30,3 @@ The active campaign is at `[campaign path]`.
 [Optional. Player requirements or preferences for the summary fold — distilled from conversation, not pasted verbatim. Examples: "Player wants emphasis on the political threads", "Player noted the Collector storyline is most important". Omit section if no player input.]
 ```
 
----
-
-## After Completion
-
-When the agent reports back, relay to the player at a natural pause:
-- Confirm the fold completed
-- Mention the archive location (so the player knows where to find the original if needed)
-- Note if any thread labels were promoted
-- Suggest the player review the updated `campaign-summary.md` at their convenience

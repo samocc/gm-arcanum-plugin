@@ -21,7 +21,8 @@ Verify all of these are loaded before proceeding. If any are missing, read them 
 
 - [ ] `campaign-summary.md` — current state (may be minimal or stale)
 - [ ] `recent-events.md` — the session events to integrate
-- [ ] `campaign-pitch.md` — Core Arc, Secondary Arcs, Story Pacing, Campaign Length (needed for thread promotion and narrative framing)
+- [ ] `campaign-pitch.md` — Core Arc, Secondary Arcs, Story Pacing (needed for thread promotion and narrative framing)
+- [ ] `campaign-settings.json` — `campaign_length` (also needed for thread promotion and narrative framing). Schema reference: [`doc-templates/campaign-settings.md`](../doc-templates/campaign-settings.md).
 - [ ] **gm-canon.md** — thread labels and current state (needed for thread promotion decisions)
 
 ## Procedure

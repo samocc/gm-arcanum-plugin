@@ -19,7 +19,7 @@ Generate a mechanically sound, rules-legal character-sheet for a companion from 
 ### Documents to Read
 
 - [ ] `companion-guide.md` for this companion (path provided in briefing) — primary source for name, race, class, and thematic concept. All build decisions must align with the concept defined here.
-- [ ] `campaign-settings.md` — system, level, party composition
+- [ ] `campaign-settings.json` — `ttrpg_system`, `current_level`, `members[]`. Schema reference: [`doc-templates/campaign-settings.md`](../doc-templates/campaign-settings.md).
 - [ ] `campaign-pitch.md` — system edition, tone
 - [ ] The PC `character-sheet.md` doc — power level reference
 - [ ] **Reference files** — read `content-sources.md` at `[workspace-root]/content-sources.md` (using the workspace root provided at the top of this skill's content) and find this companion's class and subclass. If the reference links to a file, read it as the mechanical source of truth. If it says `Model Knowledge`, proceed using built-in knowledge. If the class/subclass is not listed, proceed using built-in knowledge but note reduced reliability.
@@ -32,8 +32,8 @@ Follow these steps in order. Each step builds on the previous — do not calcula
 
 ### Step 1: Establish Identity
 
-Read the companion-guide to extract Name, Race, and Class. Read campaign-settings.md for party level.
-* Set System from campaign-settings.
+Read the companion-guide to extract Name, Race, and Class. Read `campaign-settings.json` for `current_level`.
+* Set System from `campaign-settings.json`'s `ttrpg_system`.
 * Set Role to "Companion party member (NPC)".
 * Set Proficiency Bonus based on total character level.
 * Set Map Token to the emoji circle color provided in the briefing. If no Map Token was specified in the briefing, assign from available party colors (🟢 🔵 🟣 🟡) — check existing party member character-sheets to avoid duplicates.

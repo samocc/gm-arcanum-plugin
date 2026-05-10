@@ -15,6 +15,8 @@ Companion Recruitment can run in parallel or as secondary to other tasks (during
 
 **Scope:** Use `$ARGUMENTS` and conversation context to understand the user's intent for the companion. The input can range from very detailed (name, race, class, personality notes from in-session play) to near-zero ("recruit a companion for the campaign"). Include whatever you have — the agent handles the rest from campaign documents and its own creative judgment.
 
+**Child companions:** discouraged by default. If the player's intent indicates a child or adolescent companion, surface the friction once before dispatching — name it plainly ("child companions add narrative constraints — the Romance Framework section becomes unavailable for this companion") — and let the player choose. Do not refuse outright; do not lecture. If the player proceeds, include the constraint explicitly in the agent briefing's Player Notes (`"Child companion — Romance Framework section must be set to Disabled."`) so the agent honors it during guide synthesis. The same applies to adult companions described with child-coded physical attributes (small stature, youthful appearance) — flag once and pass the constraint forward.
+
 **Dispatch:** Once enough context about the companion or the user has finished providing their input, compose the agent briefing by adapting the reference below. The briefing should capture unrecorded details — in-session interactions, player comments, how the recruitment unfolded, player preferences. Do NOT repeat information already in campaign documents (npc-directory, recent-events, etc.) — reference those docs by name instead. If you have very little context, that's fine — say so and let the agent work from campaign docs. Spawn as a **background** `gm-creative` agent. Continue on with gameplay or assisting the user accordingly. More than one companion can be recruited in parallel.
 
 **Guide briefing reference:**
@@ -71,7 +73,7 @@ When the guide agent reports back:
 
 Then **halt this process** and continue narration or other tasks while waiting for the player to approve or request changes. Resume when they do. If changes are requested due to the IP-validation note, refer to Case 2 of the next section.
 
-**Rejected / Wants changes:** Archive the companion guide using the standard archive protocol (`archive/[CampaignName]/companion-guide-[Name]-rejected.md`), then remove the companion's `co-[name]` directory. If the player wants a different take rather than outright rejection, re-run from Step 1 with updated notes incorporating their feedback.
+**Rejected / Wants changes:** Archive the companion guide using the standard archive protocol (`archive/[campaign-slug]/companion-guide-[Name]-rejected.md`, where slug is the basename of the active campaign directory), then remove the companion's `co-{slug}` directory. If the player wants a different take rather than outright rejection, re-run from Step 1 with updated notes incorporating their feedback.
 
 ## Step 2.5 — IP Validation
 *Skip this step entirely if the IP validation findings from the previous step were empty.*
@@ -138,9 +140,15 @@ You generally don't need to read character sheets.
 
 ## Step 4 — Campaign Integration
 
-After dispatching the sheet agent, read the approved companion-guide and integrate the companion into the campaign's cross-cutting documents. **Conditional:** only perform integration if the companion is NOT already in campaign-settings.md (i.e., this is a new companion, not a regeneration for an existing one). If already present, skip this step entirely.
+After dispatching the sheet agent, read the approved companion-guide and integrate the companion into the campaign's cross-cutting documents. **Conditional:** only perform integration if the companion is NOT already in `campaign-settings.json`'s `members[]` array (i.e., this is a new companion, not a regeneration for an existing one). If already present, skip this step entirely.
 
-1. **Update campaign-settings.md** — add the companion to the `Members` list under Party: `[Name] (Companion) - [Race] [Class]`
+1. **Update `campaign-settings.json`** — append the new companion to the `members` array. New entry shape:
+
+   ```json
+   { "name": "[Name]", "role": "Companion", "race": "[Race]", "class": "[Class]" }
+   ```
+
+   Edit pattern: locate the `]` that closes `"members": [...]` and insert `,\n    <new object>` before it, preserving indentation. See [doc-templates/campaign-settings.md — Plugin Edit Discipline](../doc-templates/campaign-settings.md#plugin-edit-discipline).
 2. **Update campaign CLAUDE.md** — add a row to the Companions manifest table, following the existing row format
 3. **Create (Companion) thread in gm-canon.md** (read the companion-guide's Motivations section for direction):
    * Thread name: `### [Name]: [Arc Theme] (Companion)`

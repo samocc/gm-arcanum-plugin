@@ -131,6 +131,7 @@ The single most important section. A functional short-list of actionable RP dire
 ### Relationship Dynamics [80 words target]
 
 * **Romance Framework** — 3-4 sentences prose. Default behavior around closeness and affection; response to genuine romantic interest; barriers to connection; what earns deeper trust. Focus on observable behavior the GM can portray.
+  * **Child companions:** the entire section reads exactly `Disabled — child companion, romance framework does not apply.` No prose body, no behavioral notes.
 * **Current Dynamic** — Current relationship with the PC and party. Prose, not mechanics. Describe behavioral patterns and relationship dynamics — how the companion relates to each party member, what the established norms are, where trust has shifted. Write from the companion's perspective; do not describe other characters' internal states or behaviors that belong in their own guides. Do not narrate specific past events — session events are the source you derive patterns from, not the content you write.
   * GOOD: "She follows his tactical calls without commentary and checks in after hard fights with brisk efficiency rather than fussy hovering."
   * GOOD: "He treats her with professional respect rather than pity, which she repays by not testing his patience with the aristocratic posturing she deploys on strangers."

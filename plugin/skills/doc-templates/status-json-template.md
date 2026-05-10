@@ -21,7 +21,7 @@ Every field's Sync Class governs how it behaves at session boundaries. See [Sync
 | Field | Type | Sheet Location | Sync Class | Initial | Notes |
 |---|---|---|---|---|---|
 | `name` | string | General → Name | skip | from sheet | Stable identity |
-| `system` | string | `campaign-settings.md` → TTRPG System | skip | canonicalized ID | All party members share one value. See [System ID Canonicalization](#system-id-canonicalization). |
+| `system` | string | `campaign-settings.json` → `ttrpg_system` | skip | canonicalized ID | All party members share one value. See [System ID Canonicalization](#system-id-canonicalization). |
 | `team` | string | — | skip | `"party"` | For PCs and companions |
 | `role` | string | — | skip | `"pc"` or `"co"` | Set at creation; never changes |
 | `token` | string (emoji) | General → Map Token | static | from sheet | |
@@ -189,7 +189,18 @@ The character's prepared list. Separate from the `Spells` object (slot counts pe
 | `castTime` | string | optional | Short forms: `"action"`, `"bonus"`, `"reaction"`. Longer cast times free-form. Omit when the value would be `"action"` (default). |
 | `ritual` | boolean | optional | Defaults to `false`. Orthogonal to `castTime`. |
 | `concentration` | boolean | optional | Defaults to `false`. Pairs with top-level `concentration` (currently-active concentration spell name). |
+| `attack` | object | optional | Attack-roll shape for spells that use one. See sub-table below. Omit for spells without attack rolls (saves, healing, utility). |
 | `tooltip` | string | optional | Reference text for the spell. See [Tooltips](#tooltips). |
+
+**`spells[].attack` — attack-roll shape for attack cantrips and attack-roll leveled spells.** Mirrors the `weapons[]` convention so consumers (App roller, GM context) can treat weapons + attack-spells as a single canonical attack list:
+
+| Sub-field | Type | Required | Notes |
+|---|---|---|---|
+| `hit` | integer | yes | Total attack bonus (spellcasting mod + PB + magic-item bonus). |
+| `damage` | string | yes | Damage expression including type, e.g., `"1d10 force"`, `"2d6 fire"`. Cantrip scaling is reflected at the relevant level-up tiers (5/11/17). |
+| `count` | integer | optional | Beam / ray multiplier — `1` for standard single-attack spells (omit), `3` for Scorching Ray base, scales for cantrip beam scaling (Eldritch Blast: 1 → 2 at L5 → 3 at L11 → 4 at L17). Plugin records the value; consumer logic (App roller) decides how to resolve it.
+
+Population: present only on spells that resolve via attack roll (Eldritch Blast, Fire Bolt, Scorching Ray, Inflict Wounds, Chromatic Orb, Chill Touch, etc.). Saves, healing, summoning, utility — omit. `level-up-internal` updates `attack.damage` for cantrip scaling and `attack.count` at Eldritch Blast tier breakpoints.
 
 ### `feats[]` — character feats
 
@@ -242,7 +253,7 @@ Avoid redundant `longRest: "max"` — it's the default.
 
 ## System ID Canonicalization
 
-The `system` field is a hierarchical dotted lowercase ID. Canonicalize the `TTRPG System` line from `campaign-settings.md` to one of:
+The `system` field is a hierarchical dotted lowercase ID. Canonicalize the `ttrpg_system` value from `campaign-settings.json` to one of:
 
 | Source text | Canonical `system` value |
 |---|---|
@@ -367,7 +378,7 @@ For updates (level-up, mutations, sync), use the [Field Reference](#field-refere
 - Runtime-class fields are initialized from their paired static field: `HP.current = HP.max = HP.baseMax`, `AC.current = AC.max`, `HD.current = HD.max`, `Speed.current = Speed.max`, resource `.current = .max`, `Spells.<N>.current = .max`, `HP.temp = 0`.
 - `concentration` = `""`.
 - `Conditions` = `[]`.
-- `system` canonicalized from campaign-settings per [System ID Canonicalization](#system-id-canonicalization).
+- `system` canonicalized from `campaign-settings.json`'s `ttrpg_system` per [System ID Canonicalization](#system-id-canonicalization).
 
 ### Optional / Conditional Fields
 

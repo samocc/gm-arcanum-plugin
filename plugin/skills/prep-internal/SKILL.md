@@ -28,7 +28,7 @@ Verify all of these are loaded before generating. If any are missing, read them 
 
 #### Campaign Documents
 - [ ] `campaign-pitch.md` — tone, length, pacing preferences (critical for pacing decisions). May contain a **Special** section with campaign-specific mechanics, session structure, custom economy, or gameplay phases — if present, these directly shape module design.
-- [ ] `campaign-settings.md` — session number, campaign stage, system, level, party composition
+- [ ] `campaign-settings.json` — `sessions_played`, `campaign_stage`, `ttrpg_system`, `current_level`, `members[]`. Schema reference: [`doc-templates/campaign-settings.md`](../doc-templates/campaign-settings.md).
 - [ ] `world-info.md` — geography, locations, factions, world knowledge
 - [ ] **gm-directives.md** — GM style preferences (item design, exploration tone)
 - [ ] `recent-events.md` — what happened most recently
@@ -36,7 +36,7 @@ Verify all of these are loaded before generating. If any are missing, read them 
 - [ ] **`gm-canon.md`** — multi-module thread state and continuity (if it exists)
 - [ ] **All `companion-guide.md` files** in `campaign-members/` — needed for companion beats
 - [ ] `npc-directory.md` — recurring NPCs who might appear
-- [ ] `character-info.md` for the PC — identity, backstory, hooks
+- [ ] **All `character-info.md` files** in `campaign-members/` — identity, backstory, hooks per PC
 - [ ] `inventory.md` — current party items (for item design decisions)
 
 #### Custom Campaign Documents
@@ -44,7 +44,7 @@ Verify all of these are loaded before generating. If any are missing, read them 
 
 ## Pacing
 
-Read **Campaign Stage** from `campaign-settings.md` and apply the **pacing matrix** from your agent context (Pacing Awareness section). The matrix determines what kind of arc content is appropriate at the current stage — follow it when deciding what story threads to introduce, escalate, or keep dormant in this module.
+Read `campaign_stage` from `campaign-settings.json` and apply the **pacing matrix** from your agent context (Pacing Awareness section). The matrix determines what kind of arc content is appropriate at the current stage — follow it when deciding what story threads to introduce, escalate, or keep dormant in this module.
 
 ## Content Design
 

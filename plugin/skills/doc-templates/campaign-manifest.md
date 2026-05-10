@@ -47,26 +47,26 @@ Module prep entries are added by `/gm:prep`. Modules are prefixed with the sessi
 
 ## Auto-Loaded Documents
 
-@campaign-settings.md
+@campaign-settings.json
 @gm-directives.md
 @campaign-pitch.md
 @campaign-summary.md
 @recent-events.md
 @world-info.md
 # One @-line per PC:
-@campaign-members/pc-[name]/character-info.md
+@campaign-members/pc-[slug]/character-info.md
 
 ## Campaign Members
 
 ### Player Characters
 | PC | Info | Sheet |
 |---|---|---|
-| [Name] ([Race] [Class]) | [character-info](campaign-members/pc-[name]/character-info.md) | [character-sheet](campaign-members/pc-[name]/character-sheet.md) |
+| [Name] ([Race] [Class]) | [character-info](campaign-members/pc-[slug]/character-info.md) | [character-sheet](campaign-members/pc-[slug]/character-sheet.md) |
 
 ### Companions
 | Companion | Guide | Sheet |
 |---|---|---|
-| [Name] ([Race] [Class]) | [companion-guide](campaign-members/co-[name]/companion-guide.md) | [character-sheet](campaign-members/co-[name]/character-sheet.md) |
+| [Name] ([Race] [Class]) | [companion-guide](campaign-members/co-[slug]/companion-guide.md) | [character-sheet](campaign-members/co-[slug]/character-sheet.md) |
 
 ## GM Prep (GM Eyes Only)
 

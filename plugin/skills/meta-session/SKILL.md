@@ -55,10 +55,9 @@ First-turn-only additions: `>> **Session Mode: meta**` and `>> **Party Sync**` a
    Place them near the top of your greeting response, after the opener. The Stop hook parses the event markers and dispatches the corresponding display events.
 
 1. Read `CLAUDE.md` in the active campaign directory for its document manifest.
-2. Read `campaign-settings.md` (system, level, party composition, session count).
-3. Read `campaign-pitch.md` (tone, system, player preferences — general context).
-4. Invoke the `doc-templates` Skill, it contains the domain knowledge of where the different Writing Standards & Templates live which is essential to your tasks.
-5. If the player invoked a specific skill (e.g., `/gm:level-up`), proceed directly to that skill.
+   - Autoload by default: `campaign-settings.json`, `gm-directives.md`
+2. Invoke the `doc-templates` Skill, it contains the domain knowledge of where the different Writing Standards & Templates live which is essential to your tasks.
+3. If the player invoked a specific skill (e.g., `/gm:level-up`), proceed directly to that skill.
    Otherwise, greet the player with current campaign state (level, party, sessions played) and ask what they'd like to work on. If the SessionStart context block carries an `**Originating session id:** ...` line, this session was spawned from another session — most commonly a freshly-finished `/gm:campaign-create` looking to set up companions or additional PCs the player asked for at create time. Acknowledge that in the greeting and proactively suggest the relevant operation.
 
 ---
@@ -66,10 +65,31 @@ First-turn-only additions: `>> **Session Mode: meta**` and `>> **Party Sync**` a
 ## Available Operations
 
 - **Party level-up:** `/gm:level-up` (or `/gm:level-up --auto`, `--pc=name`, `--companions-only`)
-- **Add a new PC:** `/gm:add-pc` — generate character-info, sheet, and `status.json` for a new Player Character and integrate them into the campaign. Use when the player wants to add another PC to an existing campaign (multi-PC tables, mid-campaign joins). See "Recognizing Add-PC Scenarios" below.
+- **Add a new PC:** `/gm:add-pc` — Create a new Player Character and integrate them into the campaign.
+- **Add a companion:** `/gm:companion-recruit` — Add a new Companion to the party and integrate them into the campaign.
 - **Custom campaign documents:** Create or edit custom documents (homebrew rules, rules references, lore supplements, custom systems, reference cards) and wire them into the campaign manifest. Invoke `/gm:gm-guide` for guidance on use cases, drafting, and integration.
 - **Partial-loading tuning (narrative-break marker):** See "Narrative-Break Marker" below.
-- **Roll macros:** `/gm:rolls-config` — draft or update a campaign's `rolls.json` macro file. Opt-in feature for bundling recurring turn patterns into single `>>` shortcuts. Only create when the player asks or describes roll-burden pain. See "Recognizing Roll Macro Scenarios" below.
+- **Roll macros:** `/gm:rolls-config` — draft or update a campaign's `rolls.json` macro file. Opt-in feature for bundling recurring turn patterns into single `>>` shortcuts.
+
+
+### Document system
+
+The whole history and current state of the campaign is captured in the campaign documents and session-logs.
+
+Some documents will automatically inject into context when you read `CLAUDE.md` that's an auto-load system designed for quickly the Narrative and Combat sessions primarily so they get started a bit more quickly, dynamic load documents are described further down in the campaign manifest.
+
+By default these are configured for auto-load:
+* `campaign-settings.json`
+* `gm-directives.md`
+* `campaign-pitch.md`
+* `campaign-summary.md`
+* `recent-events.md`
+* `world-info.md`
+* `campaign-members/pc-[name]/character-info.md`
+
+Other documents like `character-sheet.md`, `inventory.md`, `npc-directory.md` follow either partial, dynamic load, or a combination of both. For example for `npc-directory.md` the narrator on startup only greps the headers and first line (tagline) to create a quick map then loads full profiles on demand.
+
+Full list of documents described via `/gm:doc-templates` skill, if you need to audit the contents of one to debug issues, that's where you can get the default shape the system expects from the document (most of them are fairly free-form resilient, only some dynamic load cases do rely on expected header levels).
 
 ### Narrative-Break Marker
 
@@ -108,7 +128,13 @@ When the player describes adding another player character to the campaign, recog
 - *"What if [name] joined as a PC?"* / *"I want to bring in another character"* — direct match.
 - *"Can we play this with two characters?"* (mid-campaign) — direct match.
 
-This is distinct from `/gm:companion-recruit` — that creates a GM-controlled NPC companion, not a player-controlled PC. If the request is ambiguous (e.g., "add someone to the party"), ask whether the new member should be a Player Character (player-controlled) or a Companion (GM-controlled).
+This is distinct from `/gm:companion-recruit` — that creates a GM-controlled NPC companion, not a player-controlled PC.
+
+### Recognizing Companion Recruit Scenarios
+
+When the player describes adding a companion, npc party member, their character feels lonely, the party feels empty. Propose `/gm:companion-recruit`.
+
+This is a typical request on a new campaign, campaign creation only delivers one single PC. If `campaign-pitch.md` has companions set as "Present from the start" but no companions are listed, this is very likely why the user is here.
 
 ### Recognizing Custom Document Scenarios
 
@@ -126,6 +152,21 @@ When a player describes something that matches a common custom document use case
 > Note these are suggestions and typical use cases only but more can exist. The "custom document" types are not fixed, adjust for whatever the player needs that does not fit in the existing campaign docs.
 
 When the task is identified as custom document work, invoke the `/gm:gm-guide` skill to load its knowledge base before proceeding. The skill provides use case details, drafting guidance, and step-by-step campaign integration instructions.
+
+### Recognizing Rule-Drift Scenarios
+
+When the player flags the GM getting a recurring rule wrong on a specific element — a single spell, a feat, a class resource — the cheapest fix is the `tooltip` field on the relevant entry in that character's `status.json`, not a doc-level correction.
+
+**Cue**: "GM keeps treating [spell] as concentration", "the wording on [feat] is wrong", "this resource recovers on a short rest, not long" — narrow, element-scoped corrections.
+
+**Where tooltips live**: per-character `status.json` in `campaign-members/{pc|co}-{name}/`. Fields: `spells[n].tooltip`, `feats[n].tooltip`, and any class-resource entry's `.tooltip`. Weapon `bonuses[n].text` already serves the same role for weapon-specific rule text.
+
+**Authoring rules**:
+- State the rule as it is, standalone. The field is also UI-rendered as hover content, so contrastive phrasing reads wrong there. Avoid "no longer concentration", "previously X, now Y", "this isn't a bonus action anymore". Just describe what it is.
+- Prefix with `[WARN]` for rules the model demonstrably gets wrong, so future GM passes catch the cue without rereading the whole tooltip. Example: `"[WARN] Bonus action — not an action. Range 60 ft."`
+- If in doubt on where or how to implement the edition load the `status-json-template.md` file offered by the `/gm:doc-templates` skill for full authoring guidelines on `status.json`.
+
+**Escalation**: if the corrections accumulate across many elements (full-class rebalance, system version drift), the tooltip surface stops scaling — that's the point to suggest a `/gm:gm-guide`-driven mechanical/rules reference document instead.
 
 ### Recognizing Roll Macro Scenarios
 
@@ -152,13 +193,13 @@ When the task to perform involves meaningfully editing a document or performing 
 
 When meaningfully editing a document, performing a destructive operation, or a skill explicitly calls for archiving a document before modification, use this procedure:
 
-1. Determine the archive directory: `[workspace-root]/archive/[CampaignName]/` using the workspace root provided at the top of this skill's content.
+1. Determine the archive directory: `[workspace-root]/archive/[campaign-slug]/`. The campaign slug is the basename of `${GM_ARCANUM_ACTIVE_CAMPAIGN}` (e.g., `campaign-001`) — App-assigned and stable for the campaign's lifetime. The human-readable `display_name` lives in `campaign-settings.json` for prose surfaces; archives use the slug for stability.
 2. Create it if it doesn't exist: `mkdir -p [archive-path]`
 3. Copy the file being modified:
    `cp [original-path] [archive-path]/[DOCUMENT]-[identifier]-s[NNN].md`
 4. Verify the archive file exists before proceeding with modifications.
 
-`[NNN]` = the current `Sessions Played` value from campaign-settings. If a file with the same name already exists, append a letter suffix (A, B, C): `[DOCUMENT]-[identifier]-s[NNN]-A.md`.
+`[NNN]` = the current `sessions_played` value from `campaign-settings.json`. If a file with the same name already exists, append a letter suffix (A, B, C): `[DOCUMENT]-[identifier]-s[NNN]-A.md`.
 
 Skills specify **when** to archive — not all operations require it. This protocol defines **how**.
 

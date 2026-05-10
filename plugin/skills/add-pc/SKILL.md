@@ -17,7 +17,7 @@ This skill runs in MetaGM context — invoke only from a meta-session, never mid
 ## Pre-flight Reads
 
 - [ ] Campaign `CLAUDE.md` — manifest and document locations
-- [ ] `campaign-settings.md` — system, level, party composition, sessions played
+- [ ] `campaign-settings.json` — `ttrpg_system`, `current_level`, `members[]`, `sessions_played`. Schema reference: [`doc-templates/campaign-settings.md`](../doc-templates/campaign-settings.md).
 - [ ] `campaign-pitch.md` — tone, system, party preferences, secondary arcs
 - [ ] `world-info.md` — setting, geography, factions (the new PC must fit the established world)
 - [ ] **All existing `campaign-members/pc-*/character-info.md`** — the differentiation source. The new PC must not duplicate an existing PC's identity, backstory beats, or core hooks.
@@ -40,6 +40,8 @@ The PC's directory name is `pc-{slug}`. Derive `{slug}` from the PC's name: lowe
 1. **Core info** — Race, Gender, Age, Class concept.
 
 *Note: Concrete Race, Class and Subclass must be defined before exiting this step — if the player's input is at concept stage ("a healer who's cynical"), work collaboratively to land on a specific Class and Subclass before moving on.*
+
+*Child PCs:* discouraged by default. If the player proposes a child or adolescent PC, surface the friction once — name it plainly ("child characters add narrative constraints — romance and intimacy frameworks become unavailable for this character") — and let the player choose. Do not refuse outright; do not lecture. The same applies to adult characters described with child-coded physical attributes (small stature, youthful appearance) — flag the constraint once.
 
 **IP Validation gate (after Core info, before Backstory).** With Race / Class / Subclass now concrete, check each against the matching section in `content-sources.md` at the workspace root. For any selection **not listed** (and not marked `Model Knowledge`), emit one IP Validation intent marker per unlisted selection on its own line:
 
@@ -100,7 +102,7 @@ Mirrors the PC sheet build at campaign creation. Build collaboratively — every
 **Reference check.** Use the links in `content-sources.md` to find the reference files for the chosen Race / Class / Subclass, read those to ground your incoming work. Entries marked `Model Knowledge` (or absent) build from built-in knowledge.
 
 1. **Confirm class and subclass** (already established from character-info in Phase A). If the player changes their Race / Class / Subclass at this point, return to Phase A's IP Validation gate before proceeding.
-2. **Starting level.** Read `Level` from `campaign-settings.md` and propose that as the starting level — the new PC enters at the party's current level. The player can override (e.g., "start them one level lower as a fish-out-of-water").
+2. **Starting level.** Read `current_level` from `campaign-settings.json` and propose that as the starting level — the new PC enters at the party's current level. The player can override (e.g., "start them one level lower as a fish-out-of-water").
 3. **Ability scores.** Default to rolling 4d6-drop-lowest:
    ```bash
    echo "=== Ability Score Rolls (4d6 drop lowest) ==="
@@ -128,11 +130,14 @@ Mirrors the PC sheet build at campaign creation. Build collaboratively — every
 
 All writes happen together at the end of the flow so the campaign lands in a consistent state. Skip the **Archive Protocol** for this to keep it agile.
 
-**1. Update `campaign-settings.md`.**
-Append the new PC to the `Members` list under Party:
+**1. Update `campaign-settings.json`.**
+Append the new PC to the `members` array. New entry shape:
+
+```json
+{ "name": "[Name]", "role": "PC", "race": "[Race]", "class": "[Class]" }
 ```
-[Name] (PC) - [Race] [Class]
-```
+
+Edit pattern: locate the `]` that closes `"members": [...]`. Insert `,\n    <new object>` before the `]`, preserving indentation. The array is guaranteed non-empty at create time (the modal seeds members[0]) so an existing entry always precedes the new one. See [doc-templates/campaign-settings.md — Plugin Edit Discipline](../doc-templates/campaign-settings.md#plugin-edit-discipline) for safe array mutation.
 
 **2. Update campaign `CLAUDE.md`.**
 - Add a new line to the Auto-Loaded Documents section (one `@`-line per PC):
@@ -166,7 +171,7 @@ Update `campaign-summary.md`. Append a single italicized line under the `## The 
 ```
 *Joined Session N: [Name], [Race] [Class].*
 ```
-Where `N` is the current `Sessions Played` value from `campaign-settings.md`. Defer the full Party-paragraph rewrite to the next campaign-summary fold.
+Where `N` is the current `sessions_played` value from `campaign-settings.json`. Defer the full Party-paragraph rewrite to the next campaign-summary fold.
 
 **5. Soft-suggest a Secondary Arc.**
 If the new PC's backstory has a clear story hook that fits the campaign's tone and isn't already covered, mention it to the player as a candidate Arc for `campaign-pitch.md`. **Do not auto-edit `campaign-pitch.md`** — surface the suggestion and let the player decide. Two-line nudge max. After the player confirms, insert the arc as a new secondary arc.

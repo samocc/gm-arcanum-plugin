@@ -41,10 +41,10 @@ You are a maintenance agent — you read accumulated campaign state and produce 
 
 Campaign state is stored as markdown files. Your briefing specifies the active campaign directory. Key documents you'll need:
 
-- `campaign-settings.md` — session count, Campaign Stage, Level, Level Gain, Last Level-Up
+- `campaign-settings.json` — `sessions_played`, `campaign_stage`, `current_level`, `level_gain`, `last_level_up`. Schema reference: [`doc-templates/campaign-settings.md`](../skills/doc-templates/campaign-settings.md).
 - `campaign-summary.md` — long-term narrative arc (target for summary fold)
 - `recent-events.md` — recent session events (source for summary fold)
-- `campaign-pitch.md` — Core Arc, Secondary Arcs, Story Pacing, Campaign Length (needed for thread promotion and level-up check)
+- `campaign-pitch.md` — Core Arc, Secondary Arcs, Story Pacing (needed for thread promotion). `campaign_length` lives in `campaign-settings.json` (also needed for the level-up check).
 - `gm-canon.md` — thread state and labels (needed for thread promotion and companion arc context)
 - `campaign-members/*/companion-guide.md` — companion personality docs (target for companion evolution)
 - `session-logs/session-*.md` — session logs with companion progress sections (source for companion evolution)
@@ -60,8 +60,8 @@ Read what your task requires — your internal skills specify exactly which docu
 
 ### Procedure
 
-1. Determine the archive directory: `archive/[CampaignName]/` relative to the workspace root directory (the parent of the active campaign directory).
-   Example: if the campaign is at `campaign-jeff/`, the archive is at `archive/campaign-jeff/`.
+1. Determine the archive directory: `archive/[campaign-slug]/` relative to the workspace root directory (the parent of the active campaign directory). The slug is the basename of the active campaign path — App-assigned (`campaign-001`, `campaign-002`, …).
+   Example: if the campaign is at `campaign-001/`, the archive is at `archive/campaign-001/`.
    Construct the absolute path from the campaign path — do NOT use a relative path from your working directory.
 2. Read the file being archived in full.
 3. Check for existing archive files matching the naming pattern (Glob on `[archive-path]/[DOCUMENT]-*-s[session]*.md`). If a file with the target name already exists, append a letter suffix (e.g., `-s042a.md`).
@@ -78,7 +78,7 @@ Read what your task requires — your internal skills specify exactly which docu
 | `companion-guide.md` | `companion-guide-[CompanionName]-s[NNN].md` |
 | `character-sheet.md` | `character-sheet-[CompanionName]-s[NNN].md` |
 
-`[NNN]` = the current `Sessions Played` value from campaign-settings at the time of archiving.
+`[NNN]` = the current `sessions_played` value from `campaign-settings.json` at the time of archiving.
 * If an existing file with the same name exists, don't override, append a letter identifier (A, B, C, etc) instead: `campaign-summary-s[NNN]-A.md`
 
 ---
@@ -89,12 +89,11 @@ In check mode, you evaluate whether any campaign documents are ready for evoluti
 
 ### Step 1 — Read State
 
-1. `campaign-settings.md` — get `Sessions Played`, `Level`, `Level Gain` (under Party), and `Last Level-Up` (under Session Tracking). If `Level Gain` is missing, default to 1. If `Last Level-Up` is missing, note it as absent.
-2. **`campaign-pitch.md`** — get `Campaign Length` (One-Shot, Short, Medium, or Long).
-3. **All `companion-guide.md` docs** — read only the YAML frontmatter (`---` block at the top). Extract `evolution.stage`, `evolution.last-evolution`, and `evolution.progress` for each companion.
+1. `campaign-settings.json` — get `sessions_played`, `current_level`, `level_gain`, `last_level_up`, and `campaign_length`. The schema guarantees all five fields are present with valid values; treat `last_level_up: 0` as "never leveled up" (the sentinel). `campaign_length` is one of `"One-Shot"` / `"Short"` / `"Medium"` / `"Long"`.
+2. **All `companion-guide.md` docs** — read only the YAML frontmatter (`---` block at the top). Extract `evolution.stage`, `evolution.last-evolution`, and `evolution.progress` for each companion.
    - If a companion guide has no frontmatter, treat as `stage: acquaintance`, `last-evolution: null`, `progress: 0`.
-4. `recent-events.md` — count the number of `## Session N` headers to determine how many sessions are represented.
-5. `campaign-summary` — skim for content staleness. If it still contains placeholder text like "has not yet begun" or has very minimal content relative to sessions played, it's stale.
+3. `recent-events.md` — count the number of `## Session N` headers to determine how many sessions are represented.
+4. `campaign-summary` — skim for content staleness. If it still contains placeholder text like "has not yet begun" or has very minimal content relative to sessions played, it's stale.
 
 ### Step 2 — Evaluate Summary Fold
 
@@ -104,11 +103,11 @@ Recommend a summary fold if **either** condition is met:
 
 ### Step 3 — Evaluate Level-Up Readiness
 
-1. **Skip** if Campaign Length is **One-Shot** — One-Shot campaigns do not level up.
-2. Calculate **sessions at current level**: `Sessions Played - Last Level-Up`. If `Last Level-Up` is missing, use `Sessions Played` as the value (assumes the party has been at this level since the campaign started — this will always trigger a recommendation, prompting the player to either level up or set the field manually).
+1. **Skip** if `campaign_length` is `"One-Shot"` — One-Shot campaigns do not level up.
+2. Calculate **sessions at current level**: `sessions_played - last_level_up`. `last_level_up: 0` means the party hasn't leveled up since campaign start — the formula collapses to `sessions_played` naturally, which will trigger a recommendation once enough sessions accumulate.
 3. **Base cadence:** 4 sessions at the current level before recommending a level-up.
 4. **Recommend level-up** if sessions at current level ≥ 4.
-5. **Magnitude:** Read `Level Gain` from campaign-settings for the recommendation (e.g., if Level Gain is 2, recommend leveling from 6 to 8).
+5. **Magnitude:** Read `level_gain` from `campaign-settings.json` for the recommendation (e.g., if `level_gain` is `"2 levels"`, recommend leveling from 6 to 8).
 
 ### Step 4 — Evaluate Companion Evolution
 
@@ -162,8 +161,8 @@ Report to the narrative GM with two sections:
 
 **Level-Up:**
 - Current level: [N], sessions at this level: [X] (cadence: 4)
-- Last Level-Up: session [N] (or: never recorded)
-- Recommendation: Level-up to [current + Level Gain] (campaign setting: +[N] per level-up)
+- Last level-up: session [N] (or: never)
+- Recommendation: Level-up to [current + level_gain] (campaign setting: `level_gain: "[1 level | 2 levels]"`)
 - Note: Level-up is a MetaGM task — suggest `/gm:level-up` in a separate session.
 ```
 

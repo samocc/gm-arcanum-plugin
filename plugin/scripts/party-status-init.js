@@ -150,21 +150,29 @@ function canonicalizeSystem(raw) {
 }
 
 /**
- * Read the campaign's TTRPG System line from campaign-settings.md, canonicalize
- * it, and return the ID. Returns "" if the file or line cannot be read.
+ * Read the campaign's `ttrpg_system` from campaign-settings.json, canonicalize
+ * it, and return the ID. Returns "" if the file is missing, malformed, or the
+ * field is absent. Permissive read — never throws.
  */
 function readCampaignSystem(campaignPath) {
-  const settingsPath = path.join(campaignPath, "campaign-settings.md");
+  const settingsPath = path.join(campaignPath, "campaign-settings.json");
   if (!fs.existsSync(settingsPath)) return "";
-  let text;
+  let raw;
   try {
-    text = fs.readFileSync(settingsPath, "utf8");
+    raw = fs.readFileSync(settingsPath, "utf8");
   } catch {
     return "";
   }
-  const m = text.match(/\*\*TTRPG System:\*\*\s*(.+)/);
-  if (!m) return "";
-  return canonicalizeSystem(m[1]);
+  let parsed;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    return "";
+  }
+  if (!parsed || typeof parsed !== "object") return "";
+  const value = parsed.ttrpg_system;
+  if (typeof value !== "string") return "";
+  return canonicalizeSystem(value);
 }
 
 function main() {

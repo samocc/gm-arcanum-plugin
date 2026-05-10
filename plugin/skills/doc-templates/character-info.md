@@ -12,6 +12,7 @@ character-info is player-authored content — the AI assists in organizing and d
 
 * One-liner fields: Name, Role (always "Player Character (PC)"), Race, Gender, Age, Languages, Alignment.
 * Age can be a number or a range (e.g., "Young Adult", "Middle-aged", "160").
+* **Romance Framework** — optional. Omit by default. Add the line `Romance Framework: Disabled` only when the PC is a child or the player has explicitly opted out of romantic content for this character.
 
 ### Description
 
@@ -50,6 +51,8 @@ character-info is player-authored content — the AI assists in organizing and d
 * **Age:** [Character's age or age range]
 * **Languages:** [Languages spoken, e.g., "Common, Infernal"]
 * **Alignment:** [Character's alignment]
+* **Romance Framework:** Disabled  <!-- omit this line by default; include only for child PCs or explicit player opt-out -->
+
 
 ## Description
 

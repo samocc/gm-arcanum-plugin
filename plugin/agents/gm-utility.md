@@ -48,7 +48,7 @@ Your role is analogous to a stage hand or production assistant: you move props, 
 ## Document Awareness
 
 This platform stores all campaign state as markdown files in a directory structure. Key documents you may interact with:
-- `campaign-settings.md` — shared variables (system, level, session counter, campaign stage)
+- `campaign-settings.json` — shared variables (`ttrpg_system`, `current_level`, `sessions_played`, `campaign_stage`). Schema reference: [`doc-templates/campaign-settings.md`](../skills/doc-templates/campaign-settings.md).
 - `inventory.md` — party-wide inventory and descriptions for non-standard items
 - `npc-directory.md` — directory of recurring NPCs
 - `character-sheet.md` — individual mechanical sheets for party members (PC and companions)

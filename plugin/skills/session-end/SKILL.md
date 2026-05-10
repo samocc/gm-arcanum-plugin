@@ -18,7 +18,7 @@ When the player invokes `/gm:session-end` (or says "let's stop here", "end sessi
 A partial save checkpoints the current state so the player can start a fresh conversation without using up a full session number. It writes a lightweight log — no bookkeeping, no counter increment, no document updates. All of that is deferred to the eventual full session end.
 
 ### P1. Determine session number
-Read `campaign-settings.md` and find the `Sessions Played` count. The session in progress = count + 1.
+Read `campaign-settings.json` and use `sessions_played`. The session in progress = `sessions_played + 1`.
 
 ### P2. Determine part letter
 Glob for existing `session-NNN-*.md` files in `session-logs/` (where NNN is the session in progress, zero-padded to 3 digits). Exclude the main session log file itself (`session-NNN.md` with no letter suffix). If no partial files exist, use `A`. If `A` exists, use `B`. Continue alphabetically.
@@ -50,7 +50,7 @@ Sync-Up does NOT run on partial — it belongs to the full session-end flow (ses
 ---
 
 ### 1. Determine session number
-Read `campaign-settings.md` and find the `Sessions Played` count. The new session log number is that count + 1.
+Read `campaign-settings.json` and use `sessions_played`. The new session log number is `sessions_played + 1`.
 
 ### 2. Check for partial session files
 Glob for `session-NNN-*.md` files in `session-logs/` (where NNN matches the session being logged, zero-padded to 3 digits).
@@ -63,7 +63,12 @@ If partial files exist:
 
 If no partial files exist, proceed normally.
 
-### 3. Spawn Helper A — session-end synthesis (background)
+### 3. Helper A — session-end synthesis
+
+Two paths based on whether the campaign has companions. You already know this from session context — the companions (if any) have been alongside the party all session.
+
+#### Path A — companions present (spawn the helper, background)
+
 Spawn the `gm-evolution` agent in the background with a session-end-synth briefing.
 
 **Briefing reference:**
@@ -92,6 +97,18 @@ Report back when all writes are complete.
 ```
 
 Continue immediately to step 4 — do not wait.
+
+#### Path B — no companions (inline NPC directory update)
+
+When no companions exist, the sub-agent's beats and progress work has nothing to operate on — only the NPC directory update remains. Do that inline rather than spawning. Note "Helper A: skipped (no companions)" for the convergence log in step 12.
+
+Read `npc-directory.md` and apply directly:
+
+- **New recurring or significant NPCs encountered this session** — add entries inside `## NPC List`, above the template HTML comment at the bottom. Always populate the `Tagline` bullet first (role/function + location + current attitude toward the party), distilled from what the NPC *is* in the world, not from this session's events. Add Core Context bullets next.
+- **Existing NPCs** — append to Core Context if new information was revealed (allegiance, status, location). The Tagline rarely changes — only if the NPC's fundamental role, location, or attitude has shifted.
+- **Skip** minor one-off NPCs (unnamed guards, shopkeepers with no plot relevance, etc).
+
+Continue to step 4. The path-B work is foreground (not deferred) — there is no Helper A report to relay at step 14, only the inline edits you just made.
 
 ### 4. Write session log
 Read the session log template from `${CLAUDE_SKILL_DIR}/session-log-template.md`. Write the completed log to `session-logs/session-NNN.md` (zero-padded to 3 digits, e.g., `session-004.md`). Set the `session_id` field in the YAML header to `${CLAUDE_SESSION_ID}`.
@@ -137,29 +154,33 @@ If partials were folded in, the `recent-events.md` entry should cover the entire
 **Pending Arrival cleanup.** Read `recent-events.md` first. If it contains a `<!-- pending-arrival -->` HTML comment, remove the entire Pending Arrival block — from the comment line through the line immediately before the next `## Session ` heading (or EOF if no further sections).
 
 ### 8. Increment session counter
-In `campaign-settings.md`:
-* Update `Sessions Played`, incrementing it by 1.
-* If an `Experimental` section exists in campaign-settings with in-file instructions, follow those as well.
+Edit `campaign-settings.json` to increment `sessions_played` by 1.
+
+Edit fragment:
+- Old: `"sessions_played": <N>,`
+- New: `"sessions_played": <N+1>,`
+
+Preserve the trailing comma. See [doc-templates/campaign-settings.md — Plugin Edit Discipline](../doc-templates/campaign-settings.md#plugin-edit-discipline) for safe JSON mutation patterns.
 
 > Companion progress is handled by Helper A — do not update companion-guide frontmatter here.
 
 ### 9. Update Campaign Stage
-Read **Campaign Stage** from campaign-settings.
-- **If sticky** (e.g., `Early (sticky)`): Skip — no calculation, no changes, no mention.
-- **If One-Shot** (from campaign-pitch Campaign Length): Skip.
-- **If not sticky and not One-Shot:**
-  - Read **Campaign Length** from campaign-pitch and the just-incremented **Sessions Played**.
+Read `campaign_stage`, `campaign_stage_locked`, and `campaign_length` from `campaign-settings.json`.
+- **If `campaign_stage_locked: true`**: Skip — no calculation, no changes, no mention.
+- **If `campaign_length` is `"One-Shot"`**: Skip.
+- **Otherwise:**
+  - Use the just-incremented `sessions_played`.
   - Look up the fixed session thresholds for stage transitions:
 
-    | Campaign Length | Early → Mid | Mid → Late |
+    | `campaign_length` | Early → Mid | Mid → Late |
     |---|---|---|
-    | Short | 2 | 8 |
-    | Medium | 4 | 16 |
-    | Long | 6 | 34 |
+    | `"Short"` | 2 | 8 |
+    | `"Medium"` | 4 | 16 |
+    | `"Long"` | 6 | 34 |
 
-  - If Sessions Played ≥ the Late threshold and current stage is not Late, update to Late.
-  - If Sessions Played ≥ the Mid threshold and current stage is Early, update to Mid.
-  - If a stage transition occurs, update the Campaign Stage field in campaign-settings and note the change in the confirmation step.
+  - If `sessions_played` ≥ the Late threshold and current stage is not `"Late"`, transition to `"Late"`.
+  - If `sessions_played` ≥ the Mid threshold and current stage is `"Early"`, transition to `"Mid"`.
+  - If a stage transition occurs, Edit the `campaign_stage` field in `campaign-settings.json`. Fragment: `"campaign_stage": "<old>",` → `"campaign_stage": "<new>",`. Preserve quotes and the trailing comma. Note the change in the confirmation step.
   - If no threshold crossed, leave as-is.
 
 ### 10. Update GM Canon
@@ -194,7 +215,7 @@ If the campaign has no GM Prep manifest, skip this step.
 ### 12. Converge with helpers
 Wait for any background helpers spawned earlier to report back.
 
-- **Helper A (`gm-evolution` session-end-synth)** — always spawned. Should report companion-guides updated (beats + progress) and `npc-directory.md` additions/updates.
+- **Helper A (`gm-evolution` session-end-synth)** — spawned in step 3 path A (companions present). Should report companion-guides updated (beats + progress) and `npc-directory.md` additions/updates. If step 3 took path B (no companions), skip waiting — the NPC update was already done inline.
 - **Helper B (`gm-utility` post-persist pass)** — spawned in step 6 when there was work. Should report inventory updates (if Task 1 ran) and drift findings per party member (if Task 2 ran). If step 6 marked Helper B as "no work", skip waiting for it.
 - If a helper reports a failure or a section it couldn't complete, note it — you'll relay this to the player.
 - Do not proceed to cleanup or confirm until all spawned helpers have reported. If convergence takes unusually long, note the delay but continue to cleanup to avoid leaving partial files on disk.
@@ -205,7 +226,10 @@ If partial session files were found in step 2, **delete them**.
 If no partials existed, skip this step.
 
 ### 14. Confirm to the player
-1. State what was saved and list the file paths of all documents that were created or updated — session log, `recent-events.md`, `gm-canon.md`, `campaign-settings.md`, GM Prep manifest (if changed), plus what the helpers reported (Helper A: companion-guides, `npc-directory.md`; Helper B: `inventory.md` if Task 1 ran, drift findings if Task 2 ran). If partial files were folded in and deleted, mention this.
+
+The full session-end confirmation routes through the `> PRIMARY` channel — it's session-bookend prose, the same register as the narrative-session greeting. The session has formally ended at `/gm:session-end` invocation; we're past in-character narration, but this is still session-framing the player sees in the main panel, not OOC side-chat.
+
+1. State what was saved and list the file paths of all documents that were created or updated — session log, `recent-events.md`, `gm-canon.md`, `campaign-settings.json`, GM Prep manifest (if changed), plus what the helpers reported (Helper A path A: companion-guides, `npc-directory.md`; Helper A path B: just `npc-directory.md` from your inline edit; Helper B: `inventory.md` if Task 1 ran, drift findings if Task 2 ran). If partial files were folded in and deleted, mention this.
 2. If Campaign Stage transitioned, mention the transition.
 3. If a helper flagged anything for player review (unclear companion grading, etc.) or if any GM Prep module status was flagged as uncertain, surface those questions clearly.
 4. **If Helper B's drift check produced any output** (synced changes or flags), relay it grouped by character. Syncs are informational (already applied). Flags are for player review — state them plainly; do not prompt for action.

@@ -22,7 +22,7 @@ Verify all of these are loaded before proceeding. If any are missing, read them 
 
 - [ ] `character-sheet.md` — read in full, this is the core document to work with
 - [ ] `companion-guide.md` — read Combat Initiation and Problem Solving sections for personality-consistent decisions
-- [ ] `campaign-settings.md` — for `Sessions Played` (archive naming)
+- [ ] `campaign-settings.json` — for `sessions_played` (archive naming). Schema reference: [`doc-templates/campaign-settings.md`](../doc-templates/campaign-settings.md).
 - [ ] **Reference files** — read `content-sources.md` at `[workspace-root]/content-sources.md` (using the workspace root provided at the top of this skill's content) and find this companion's class and subclass. If the reference links to a file, read it as the mechanical source of truth. If it says `Model Knowledge`, proceed using built-in knowledge. If the class/subclass is not listed, proceed using built-in knowledge but note reduced reliability.
 
 ---
@@ -89,7 +89,7 @@ Read the existing `status.json` (if present) and apply these changes:
 - **abilities** — on ASI, update the affected ability's `{score, mod, save}`. On a PB cascade, update `save` for every proficient ability; recompute each `mod` from its `score` for any ability whose score changed.
 - **Speed** — update `max` (and `current` if they match) when the level grants new movement (Monk Unarmored Movement step, Barbarian Fast Movement at 5, etc.). Usually unchanged.
 - **SpellDC / SpellAttack** — recalculate and update if the PB cascaded or the spellcasting ability changed via ASI.
-- **spells[]** — add entries for newly prepared/learned spells per the sheet update. For spells-known classes that swapped a spell, reflect the replacement. Attach `tooltip` for high-reference additions where authoritative rule text is clear.
+- **spells[]** — add entries for newly prepared/learned spells per the sheet update. For spells-known classes that swapped a spell, reflect the replacement. Attach `tooltip` for high-reference additions where authoritative rule text is clear. For attack-roll spells (Eldritch Blast, Fire Bolt, Scorching Ray, Inflict Wounds, Chromatic Orb, etc.), populate `attack: { hit, damage, count? }` per the schema. **Cantrip scaling:** at levels 5, 11, 17, update `attack.damage` for cantrip damage scaling (e.g., Fire Bolt `1d10` → `2d10` → `3d10` → `4d10`); for Eldritch Blast specifically, update `attack.count` at the same tiers (1 → 2 → 3 → 4 beams). **Hit recompute:** on ASI to spellcasting ability or PB cascade, recompute `attack.hit` for every spell entry that carries the `attack` sub-object.
 - **feats[]** — when a feat was taken at this level (in place of ASI), add an entry with `tooltip` if the rule text is clear.
 - **skillProficiencies / skillExpertise** — update only if the level grants a new proficiency or expertise (uncommon — Rogue Expertise bumps, some subclass features).
 - **weapons[], race** — preserve unchanged — level-up doesn't normally touch these. Update only if the level grants a new weapon proficiency added to the equipped loadout or (exceptional homebrew) a race change.

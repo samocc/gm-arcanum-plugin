@@ -53,5 +53,5 @@ Continue gameplay. Read the prep yourself before the party reaches that content.
 
 When the agent reports back, relay per Verbosity:
 
-- **gm-eyes-only (default):** Tell the player only that the prep is ready and where it was written. Do not relay the content summary (discoveries, encounters, items, creative decisions) — it spoils prep-discoverable beats. Keep the report in your own context to adapt during play. Escalate a specific item to the player only if it genuinely needs alignment (e.g., a creative decision that contradicts their stated direction).
-- **Verbose:** Relay the agent's full summary to the player as reported.
+- **gm-eyes-only (default):** Inline OOC line — `> 📜 Prep ready: [path]`. Do not relay the content summary (discoveries, encounters, items, creative decisions) — it spoils prep-discoverable beats. Keep the report in your own context to adapt during play. Escalate a specific item to the player only if it genuinely needs alignment (e.g., a creative decision that contradicts their stated direction) — that escalation goes in the `> SECONDARY` channel.
+- **Verbose:** Relay the agent's full summary to the player in the `> SECONDARY` channel.
